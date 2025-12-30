@@ -629,11 +629,50 @@ export function completeExercise(
   return true;
 }
 
+/**
+ * Mark an exercise as not completed (undo)
+ */
+export function uncompleteExercise(
+  sessionExerciseId: number,
+  userId: number
+): boolean {
+  // Verify ownership
+  const sessionExercise = get<{ id: number; exercise_id: number; session_id: number }>(
+    `SELECT se.id, se.exercise_id, se.session_id
+     FROM session_exercises se
+     JOIN workout_sessions ws ON se.session_id = ws.id
+     JOIN workout_plans wp ON ws.plan_id = wp.id
+     WHERE se.id = ? AND wp.user_id = ?`,
+    [sessionExerciseId, userId]
+  );
+
+  if (!sessionExercise) {
+    return false;
+  }
+
+  // Mark as not completed
+  run(
+    `UPDATE session_exercises SET completed = 0, completed_at = NULL
+     WHERE id = ?`,
+    [sessionExerciseId]
+  );
+
+  // Remove from history
+  run(
+    `DELETE FROM exercise_history
+     WHERE session_exercise_id = ? AND user_id = ?`,
+    [sessionExerciseId, userId]
+  );
+
+  return true;
+}
+
 export default {
   generateWorkoutPlan,
   getWorkoutPlan,
   getCurrentPlan,
   activatePlan,
   refreshDay,
-  completeExercise
+  completeExercise,
+  uncompleteExercise
 };

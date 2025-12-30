@@ -6,7 +6,8 @@ import {
   getCurrentPlan,
   activatePlan,
   refreshDay,
-  completeExercise
+  completeExercise,
+  uncompleteExercise
 } from '../services/workoutGeneratorService.js';
 import { all, get } from '../config/database.js';
 
@@ -318,6 +319,31 @@ router.put('/exercises/:sessionExerciseId/complete', (req: Request, res: Respons
   } catch (error) {
     console.error('Error completing exercise:', error);
     res.status(500).json({ error: 'Failed to complete exercise' });
+  }
+});
+
+// PUT /api/workouts/exercises/:sessionExerciseId/uncomplete - Undo exercise completion
+router.put('/exercises/:sessionExerciseId/uncomplete', (req: Request, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const sessionExerciseId = parseInt(req.params.sessionExerciseId);
+
+    if (isNaN(sessionExerciseId)) {
+      res.status(400).json({ error: 'Invalid exercise ID' });
+      return;
+    }
+
+    const success = uncompleteExercise(sessionExerciseId, userId);
+
+    if (!success) {
+      res.status(404).json({ error: 'Exercise not found' });
+      return;
+    }
+
+    res.json({ message: 'Exercise completion undone' });
+  } catch (error) {
+    console.error('Error uncompleting exercise:', error);
+    res.status(500).json({ error: 'Failed to undo exercise completion' });
   }
 });
 
