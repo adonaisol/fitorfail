@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
-import { Dumbbell, User, LogOut } from 'lucide-react';
+import { Dumbbell, LogOut, History, HelpCircle, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Header(): JSX.Element {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40 pt-safe">
@@ -13,34 +13,52 @@ export default function Header(): JSX.Element {
           <span className="text-xl font-bold text-gray-900">FitOrFail</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
-          <Link to="/" className="text-gray-600 hover:text-primary-500 font-medium">
-            Workouts
-          </Link>
-          <Link to="/history" className="text-gray-600 hover:text-primary-500 font-medium">
-            History
-          </Link>
-          <Link to="/profile" className="text-gray-600 hover:text-primary-500 font-medium">
-            Profile
-          </Link>
-        </nav>
-
-        <div className="flex items-center gap-3">
-          {user && (
-            <span className="hidden sm:block text-sm text-gray-600">
-              {user.username}
+        <div className="flex items-center gap-1">
+          <Link
+            to="/"
+            className="group relative hidden md:flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-500"
+          >
+            <Dumbbell className="w-5 h-5" />
+            <span className="absolute top-full mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Workouts
             </span>
-          )}
+          </Link>
+          <Link
+            to="/history"
+            className="group relative hidden md:flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-500"
+          >
+            <History className="w-5 h-5" />
+            <span className="absolute top-full mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              History
+            </span>
+          </Link>
+          <Link
+            to="/help"
+            className="group relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-500"
+          >
+            <HelpCircle className="w-5 h-5" />
+            <span className="absolute top-full mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Help
+            </span>
+          </Link>
+          <Link
+            to="/profile"
+            className="group relative hidden md:flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-500"
+          >
+            <User className="w-5 h-5" />
+            <span className="absolute top-full mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Profile
+            </span>
+          </Link>
           <button
             onClick={logout}
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-red-500"
-            title="Logout"
+            className="group relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 hover:text-red-500"
           >
             <LogOut className="w-5 h-5" />
+            <span className="absolute top-full mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Logout
+            </span>
           </button>
-          <Link to="/profile" className="md:hidden p-2 rounded-full hover:bg-gray-100">
-            <User className="w-6 h-6 text-gray-600" />
-          </Link>
         </div>
       </div>
     </header>

@@ -11,6 +11,7 @@ import RegisterPage from './pages/RegisterPage';
 import GeneratePage from './pages/GeneratePage';
 import ProfilePage from './pages/ProfilePage';
 import HistoryPage from './pages/HistoryPage';
+import HelpPage from './pages/HelpPage';
 
 function App(): JSX.Element {
   return (
@@ -53,6 +54,7 @@ function App(): JSX.Element {
           <Route path="generate" element={<GeneratePage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="help" element={<HelpPage />} />
         </Route>
       </Routes>
     </AuthProvider>
