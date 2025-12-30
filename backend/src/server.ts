@@ -7,8 +7,8 @@ import { initializeDatabase } from './config/database.js';
 // Import routes
 import authRoutes from './routes/auth';
 import exerciseRoutes from './routes/exercises';
+import workoutRoutes from './routes/workouts';
 // Future phases:
-// import workoutRoutes from './routes/workouts';
 // import userRoutes from './routes/users';
 
 // Initialize Express app
@@ -30,7 +30,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/exercises', exerciseRoutes);
-// app.use('/api/workouts', workoutRoutes); // Phase 3
+app.use('/api/workouts', workoutRoutes);
 // app.use('/api/users', userRoutes); // Phase 6
 
 // 404 handler
