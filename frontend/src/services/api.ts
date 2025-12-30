@@ -1,5 +1,16 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import type { AuthResponse, LoginCredentials, RegisterCredentials, User, WorkoutPlan, WorkoutDay, WorkoutPlanSummary } from '../types';
+import type {
+  AuthResponse,
+  LoginCredentials,
+  RegisterCredentials,
+  User,
+  WorkoutPlan,
+  WorkoutDay,
+  WorkoutPlanSummary,
+  UserProfile,
+  PreferencesOptions,
+  ExerciseRating
+} from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -99,6 +110,47 @@ export const workoutApi = {
 
   getHistory: async (limit = 10, offset = 0): Promise<{ plans: WorkoutPlanSummary[]; pagination: { total: number; limit: number; offset: number } }> => {
     const response = await api.get<{ plans: WorkoutPlanSummary[]; pagination: { total: number; limit: number; offset: number } }>(`/workouts/history?limit=${limit}&offset=${offset}`);
+    return response.data;
+  }
+};
+
+// Preferences API
+export const preferencesApi = {
+  get: async (): Promise<UserProfile> => {
+    const response = await api.get<UserProfile>('/preferences');
+    return response.data;
+  },
+
+  update: async (data: {
+    workoutDays?: number;
+    preferredEquipment?: string[];
+    avoidedBodyParts?: string[];
+    skillLevel?: string;
+  }): Promise<{ message: string } & UserProfile> => {
+    const response = await api.put<{ message: string } & UserProfile>('/preferences', data);
+    return response.data;
+  },
+
+  getOptions: async (): Promise<PreferencesOptions> => {
+    const response = await api.get<PreferencesOptions>('/preferences/options');
+    return response.data;
+  }
+};
+
+// Exercise Rating API
+export const ratingApi = {
+  rate: async (exerciseId: number, rating: number, notes?: string): Promise<{ message: string; rating: ExerciseRating }> => {
+    const response = await api.post<{ message: string; rating: ExerciseRating }>(`/exercises/${exerciseId}/rate`, { rating, notes });
+    return response.data;
+  },
+
+  get: async (exerciseId: number): Promise<ExerciseRating> => {
+    const response = await api.get<ExerciseRating>(`/exercises/${exerciseId}/rating`);
+    return response.data;
+  },
+
+  remove: async (exerciseId: number): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/exercises/${exerciseId}/rating`);
     return response.data;
   }
 };

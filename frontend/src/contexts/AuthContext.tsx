@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
+  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,13 +74,19 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((updatedUser: User): void => {
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  }, []);
+
   const value: AuthContextType = {
     user,
     isLoading,
     isAuthenticated: !!user,
     login,
     register,
-    logout
+    logout,
+    updateUser
   };
 
   return (

@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import GeneratePage from './pages/GeneratePage';
+import ProfilePage from './pages/ProfilePage';
 
 function App(): JSX.Element {
   return (
@@ -47,6 +48,7 @@ function App(): JSX.Element {
         }>
           <Route index element={<HomePage />} />
           <Route path="generate" element={<GeneratePage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>
     </AuthProvider>

@@ -96,3 +96,27 @@ export interface WorkoutPlanSummary {
   status: string;
   created_at: string;
 }
+
+// User preferences types
+export interface UserPreferences {
+  workoutDays: 3 | 4 | 5;
+  preferredEquipment: string[];
+  avoidedBodyParts: string[];
+}
+
+export interface UserProfile {
+  user: User;
+  preferences: UserPreferences;
+}
+
+export interface PreferencesOptions {
+  equipment: string[];
+  bodyParts: string[];
+}
+
+// Exercise rating types
+export interface ExerciseRating {
+  exerciseId: number;
+  rating: number | null;
+  notes: string | null;
+}
