@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Dumbbell } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Check, ChevronDown, ChevronUp, Dumbbell, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { SessionExercise } from '../../types';
+import { ratingApi } from '../../services/api';
+import RatingInput from '../common/RatingInput';
 
 interface ExerciseCardProps {
   exercise: SessionExercise;
@@ -13,6 +15,47 @@ export default function ExerciseCard({ exercise, onComplete, onUncomplete }: Exe
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isUncompleting, setIsUncompleting] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [isLoadingRating, setIsLoadingRating] = useState(false);
+  const [hasFetchedRating, setHasFetchedRating] = useState(false);
+
+  // Fetch user rating when expanded for the first time
+  useEffect(() => {
+    if (isExpanded && !hasFetchedRating) {
+      fetchRating();
+    }
+  }, [isExpanded, hasFetchedRating]);
+
+  const fetchRating = async () => {
+    setIsLoadingRating(true);
+    try {
+      const result = await ratingApi.get(exercise.exerciseId);
+      setUserRating(result.rating);
+      setHasFetchedRating(true);
+    } catch {
+      // Silently fail - rating is optional
+    } finally {
+      setIsLoadingRating(false);
+    }
+  };
+
+  const handleRatingChange = async (newRating: number) => {
+    const previousRating = userRating;
+    setUserRating(newRating);
+
+    try {
+      if (newRating === 0) {
+        await ratingApi.remove(exercise.exerciseId);
+        toast.success('Rating removed');
+      } else {
+        await ratingApi.rate(exercise.exerciseId, newRating);
+        toast.success(`Rated ${newRating} stars`);
+      }
+    } catch {
+      setUserRating(previousRating);
+      toast.error('Failed to save rating');
+    }
+  };
 
   const handleComplete = async () => {
     if (exercise.completed || isCompleting) return;
@@ -138,6 +181,23 @@ export default function ExerciseCard({ exercise, onComplete, onUncomplete }: Exe
                 <span>Equipment: {exercise.equipment}</span>
               </div>
             )}
+
+            {/* Rating */}
+            <div className="flex items-center justify-between pt-2 mt-2 border-t border-gray-100">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <Star className="w-3.5 h-3.5" />
+                <span>Your rating:</span>
+              </div>
+              {isLoadingRating ? (
+                <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <RatingInput
+                  value={userRating}
+                  onChange={handleRatingChange}
+                  size="sm"
+                />
+              )}
+            </div>
           </div>
         </div>
       )}

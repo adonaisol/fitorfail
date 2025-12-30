@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import type { SqlValue } from 'sql.js';
-import { all, get } from '../config/database.js';
+import { all, get, run } from '../config/database.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -128,10 +129,116 @@ router.get('/:id', (req: Request<{ id: string }>, res: Response) => {
   }
 });
 
-// POST /api/exercises/:id/rate - Rate an exercise
-router.post('/:id/rate', (_req: Request, res: Response) => {
-  // TODO: Implement in Phase 6 (requires auth)
-  res.status(501).json({ message: 'Not implemented yet' });
+// POST /api/exercises/:id/rate - Rate an exercise (requires auth)
+router.post('/:id/rate', authenticate, (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const exerciseId = parseInt(req.params.id);
+    const { rating, notes } = req.body;
+
+    if (isNaN(exerciseId)) {
+      res.status(400).json({ error: 'Invalid exercise ID' });
+      return;
+    }
+
+    // Validate rating
+    if (rating === undefined || rating < 0 || rating > 5) {
+      res.status(400).json({ error: 'Rating must be between 0 and 5' });
+      return;
+    }
+
+    // Check if exercise exists
+    const exercise = get<{ id: number }>('SELECT id FROM exercises WHERE id = ?', [exerciseId]);
+    if (!exercise) {
+      res.status(404).json({ error: 'Exercise not found' });
+      return;
+    }
+
+    // Check if rating exists
+    const existingRating = get<{ id: number }>(
+      'SELECT id FROM user_exercise_ratings WHERE user_id = ? AND exercise_id = ?',
+      [userId, exerciseId]
+    );
+
+    if (existingRating) {
+      // Update existing rating
+      run(
+        `UPDATE user_exercise_ratings
+         SET rating = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE user_id = ? AND exercise_id = ?`,
+        [rating, notes || null, userId, exerciseId]
+      );
+    } else {
+      // Create new rating
+      run(
+        `INSERT INTO user_exercise_ratings (user_id, exercise_id, rating, notes)
+         VALUES (?, ?, ?, ?)`,
+        [userId, exerciseId, rating, notes || null]
+      );
+    }
+
+    res.json({
+      message: 'Rating saved successfully',
+      rating: {
+        exerciseId,
+        rating,
+        notes: notes || null
+      }
+    });
+  } catch (error) {
+    console.error('Error saving rating:', error);
+    res.status(500).json({ error: 'Failed to save rating' });
+  }
+});
+
+// GET /api/exercises/:id/rating - Get user's rating for an exercise (requires auth)
+router.get('/:id/rating', authenticate, (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const exerciseId = parseInt(req.params.id);
+
+    if (isNaN(exerciseId)) {
+      res.status(400).json({ error: 'Invalid exercise ID' });
+      return;
+    }
+
+    const userRating = get<{ rating: number; notes: string | null }>(
+      'SELECT rating, notes FROM user_exercise_ratings WHERE user_id = ? AND exercise_id = ?',
+      [userId, exerciseId]
+    );
+
+    res.json({
+      exerciseId,
+      rating: userRating?.rating || null,
+      notes: userRating?.notes || null
+    });
+  } catch (error) {
+    console.error('Error fetching rating:', error);
+    res.status(500).json({ error: 'Failed to fetch rating' });
+  }
+});
+
+// DELETE /api/exercises/:id/rating - Remove user's rating for an exercise
+router.delete('/:id/rating', authenticate, (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const exerciseId = parseInt(req.params.id);
+
+    if (isNaN(exerciseId)) {
+      res.status(400).json({ error: 'Invalid exercise ID' });
+      return;
+    }
+
+    run(
+      'DELETE FROM user_exercise_ratings WHERE user_id = ? AND exercise_id = ?',
+      [userId, exerciseId]
+    );
+
+    res.json({ message: 'Rating removed successfully' });
+  } catch (error) {
+    console.error('Error removing rating:', error);
+    res.status(500).json({ error: 'Failed to remove rating' });
+  }
 });
 
 export default router;
