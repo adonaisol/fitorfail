@@ -8,6 +8,7 @@ FitOrFail is a fitness application that automatically generates personalized wee
 
 ## Technology Stack
 
+- **Language**: TypeScript (shared tsconfig at root)
 - **Backend**: Express.js + sql.js (SQLite) + JWT authentication
 - **Frontend**: React + Vite + Tailwind CSS (mobile-first)
 - **Dataset**: 2,918 exercises in `dataset/allExercises.json`
@@ -23,11 +24,11 @@ npm install
 # Start development server (port 3001)
 npm run dev
 
+# Build TypeScript
+npm run build
+
 # Start production server
 npm start
-
-# Initialize/reset database
-npm run db:init
 
 # Seed exercises into database
 npm run db:seed
@@ -42,7 +43,7 @@ npm install
 # Start development server (port 5173)
 npm run dev
 
-# Build for production
+# Build for production (includes TypeScript check)
 npm run build
 
 # Preview production build
@@ -53,30 +54,33 @@ npm run preview
 
 ```
 fitorfail/
+├── tsconfig.json              # Shared TypeScript config
 ├── backend/
+│   ├── tsconfig.json          # Extends root, backend-specific
 │   ├── src/
-│   │   ├── config/         # Database and env configuration
-│   │   ├── middleware/     # Auth, validation, error handling
-│   │   ├── routes/         # API endpoint handlers
-│   │   ├── controllers/    # Business logic
-│   │   ├── services/       # Core services (workout generation)
-│   │   └── server.js       # Express app entry point
+│   │   ├── config/            # Database and env configuration
+│   │   ├── middleware/        # Auth, validation, error handling
+│   │   ├── routes/            # API endpoint handlers
+│   │   ├── controllers/       # Business logic
+│   │   ├── services/          # Core services (workout generation)
+│   │   └── server.ts          # Express app entry point
 │   ├── database/
-│   │   ├── migrations/     # SQL schema files
-│   │   ├── seeds/          # Database seeding scripts
-│   │   └── fitorfail.db    # SQLite database file
+│   │   ├── migrations/        # SQL schema files
+│   │   ├── seeds/             # Database seeding scripts (.ts)
+│   │   └── fitorfail.db       # SQLite database file
 │   └── package.json
 ├── frontend/
+│   ├── tsconfig.json          # Extends root, React-specific
 │   ├── src/
-│   │   ├── components/     # React components (layout, auth, workout, etc.)
-│   │   ├── pages/          # Page components
-│   │   ├── contexts/       # React Context (auth, workout state)
-│   │   ├── hooks/          # Custom React hooks
-│   │   ├── services/       # API client functions
-│   │   └── App.jsx
+│   │   ├── components/        # React components (.tsx)
+│   │   ├── pages/             # Page components (.tsx)
+│   │   ├── contexts/          # React Context (auth, workout state)
+│   │   ├── hooks/             # Custom React hooks
+│   │   ├── services/          # API client functions
+│   │   └── App.tsx
 │   └── package.json
-├── dataset/                # Exercise data (CSV and JSON)
-└── plans/                  # Implementation plan documentation
+├── dataset/                   # Exercise data (CSV and JSON)
+└── plans/                     # Implementation plan documentation
 ```
 
 ## API Endpoints
@@ -113,23 +117,23 @@ Key tables:
 ## Exercise Data Structure
 
 Each exercise in the dataset:
-```json
-{
-  "id": number,
-  "title": string,
-  "description": string,
-  "type": string (Strength, Cardio, etc.),
-  "bodyPart": string (Chest, Back, Legs, etc.),
-  "equipment": string (Barbell, Dumbbell, Body Only, etc.),
-  "level": string (Beginner/Intermediate/Expert),
-  "rating": number | null,
-  "ratingDesc": string | null
+```typescript
+interface Exercise {
+  id: number;
+  title: string;
+  description: string | null;
+  type: string;       // Strength, Cardio, etc.
+  bodyPart: string;   // Chest, Back, Legs, etc.
+  equipment: string;  // Barbell, Dumbbell, Body Only, etc.
+  level: string;      // Beginner, Intermediate, Expert
+  rating: number | null;
+  ratingDesc: string | null;
 }
 ```
 
 ## Implementation Status
 
-- [x] Phase 1: Foundation Setup (Backend, Frontend, Database)
+- [x] Phase 1: Foundation Setup (Backend, Frontend, Database, TypeScript)
 - [ ] Phase 2: Authentication System
 - [ ] Phase 3: Workout Generation Engine
 - [ ] Phase 4: Weekly Workout View
