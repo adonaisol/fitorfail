@@ -1,11 +1,17 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, ChangeEvent, FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { Dumbbell, Eye, EyeOff } from 'lucide-react';
 
-export default function RegisterPage() {
-  const navigate = useNavigate();
+interface RegisterFormData {
+  username: string;
+  password: string;
+  confirmPassword: string;
+  skillLevel: 'Beginner' | 'Intermediate' | 'Expert';
+}
+
+export default function RegisterPage(): JSX.Element {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RegisterFormData>({
     username: '',
     password: '',
     confirmPassword: '',
@@ -14,12 +20,12 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -41,7 +47,7 @@ export default function RegisterPage() {
       // Placeholder - will be replaced with actual API call
       console.log('Register attempt:', formData);
       setError('Registration not implemented yet. Coming in Phase 2!');
-    } catch (err) {
+    } catch {
       setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);

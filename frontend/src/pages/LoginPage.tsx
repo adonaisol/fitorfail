@@ -1,23 +1,27 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, ChangeEvent, FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { Dumbbell, Eye, EyeOff } from 'lucide-react';
 
-export default function LoginPage() {
-  const navigate = useNavigate();
+interface LoginFormData {
+  username: string;
+  password: string;
+}
+
+export default function LoginPage(): JSX.Element {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LoginFormData>({
     username: '',
     password: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -27,7 +31,7 @@ export default function LoginPage() {
       // Placeholder - will be replaced with actual API call
       console.log('Login attempt:', formData);
       setError('Login not implemented yet. Coming in Phase 2!');
-    } catch (err) {
+    } catch {
       setError('Login failed. Please try again.');
     } finally {
       setLoading(false);

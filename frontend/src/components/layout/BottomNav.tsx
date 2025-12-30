@@ -1,14 +1,20 @@
 import { NavLink } from 'react-router-dom';
-import { Home, History, User, Plus } from 'lucide-react';
+import { Home, History, User, Plus, LucideIcon } from 'lucide-react';
 
-const navItems = [
+interface NavItem {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+const navItems: NavItem[] = [
   { to: '/', icon: Home, label: 'Home' },
   { to: '/generate', icon: Plus, label: 'Generate' },
   { to: '/history', icon: History, label: 'History' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 
-export default function BottomNav() {
+export default function BottomNav(): JSX.Element {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pb-safe z-50">
       <div className="flex items-center justify-around h-16">

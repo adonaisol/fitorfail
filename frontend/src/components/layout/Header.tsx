@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Dumbbell, User } from 'lucide-react';
 
-export default function Header() {
+export default function Header(): JSX.Element {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40 pt-safe">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">

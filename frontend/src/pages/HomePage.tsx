@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Dumbbell, Plus, RefreshCw } from 'lucide-react';
+import { Dumbbell, Plus } from 'lucide-react';
 
-export default function HomePage() {
+export default function HomePage(): JSX.Element {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Welcome Section */}

@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import BottomNav from './BottomNav';
 
-export default function Layout() {
+export default function Layout(): JSX.Element {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />

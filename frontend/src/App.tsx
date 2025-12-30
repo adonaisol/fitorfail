@@ -4,7 +4,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
-function App() {
+function App(): JSX.Element {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
