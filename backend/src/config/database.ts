@@ -1,4 +1,4 @@
-import initSqlJs, { Database as SqlJsDatabase, SqlJsStatic } from 'sql.js';
+import initSqlJs, { Database as SqlJsDatabase, SqlJsStatic, BindParams } from 'sql.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -68,10 +68,12 @@ export function closeDatabase(): void {
 }
 
 // Helper to run a query and return all results
-export function all<T = Record<string, unknown>>(sql: string, params: unknown[] = []): T[] {
+export function all<T = Record<string, unknown>>(sql: string, params: BindParams = []): T[] {
   if (!db) throw new Error('Database not initialized');
   const stmt = db.prepare(sql);
-  if (params.length > 0) {
+  if (Array.isArray(params) && params.length > 0) {
+    stmt.bind(params);
+  } else if (params && !Array.isArray(params)) {
     stmt.bind(params);
   }
   const results: T[] = [];
@@ -83,18 +85,20 @@ export function all<T = Record<string, unknown>>(sql: string, params: unknown[] 
 }
 
 // Helper to run a query and return first result
-export function get<T = Record<string, unknown>>(sql: string, params: unknown[] = []): T | null {
+export function get<T = Record<string, unknown>>(sql: string, params: BindParams = []): T | null {
   const results = all<T>(sql, params);
   return results.length > 0 ? results[0] : null;
 }
 
 // Helper to run a query that doesn't return results
-export function run(sql: string, params: unknown[] = []): { lastInsertRowid: number | null } {
+export function run(sql: string, params: BindParams = []): { lastInsertRowid: number | null } {
   if (!db) throw new Error('Database not initialized');
   db.run(sql, params);
-  saveDatabase();
+  // Get last_insert_rowid BEFORE saving to disk (saveDatabase might reset internal state)
   const result = db.exec("SELECT last_insert_rowid()");
-  return { lastInsertRowid: result[0]?.values[0]?.[0] as number | null };
+  const lastInsertRowid = result[0]?.values[0]?.[0] as number | null;
+  saveDatabase();
+  return { lastInsertRowid };
 }
 
 export default { getDatabase, initializeDatabase, closeDatabase, saveDatabase, all, get, run };

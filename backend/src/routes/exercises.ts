@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import type { SqlValue } from 'sql.js';
 import { all, get } from '../config/database.js';
 
 const router = Router();
@@ -30,7 +31,7 @@ router.get('/', (req: Request<object, object, object, ExerciseQuery>, res: Respo
     const { bodyPart, equipment, level, type, limit = '50', offset = '0' } = req.query;
 
     let sql = 'SELECT * FROM exercises WHERE 1=1';
-    const params: unknown[] = [];
+    const params: SqlValue[] = [];
 
     // TODO: Pass bodyPart, equipment, level, type through upper-case function to match DB values
     if (bodyPart) {
@@ -57,7 +58,7 @@ router.get('/', (req: Request<object, object, object, ExerciseQuery>, res: Respo
 
     // Get total count for pagination
     let countSql = 'SELECT COUNT(*) as total FROM exercises WHERE 1=1';
-    const countParams: unknown[] = [];
+    const countParams: SqlValue[] = [];
     if (bodyPart) {
       countSql += ' AND body_part = ?';
       countParams.push(bodyPart);
