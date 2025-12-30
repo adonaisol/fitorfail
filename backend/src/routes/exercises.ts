@@ -1,16 +1,38 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { all, get } from '../config/database.js';
 
 const router = Router();
 
+interface Exercise {
+  id: number;
+  title: string;
+  description: string | null;
+  type: string | null;
+  body_part: string | null;
+  equipment: string | null;
+  level: string | null;
+  rating: number | null;
+  rating_desc: string | null;
+}
+
+interface ExerciseQuery {
+  bodyPart?: string;
+  equipment?: string;
+  level?: string;
+  type?: string;
+  limit?: string;
+  offset?: string;
+}
+
 // GET /api/exercises - Get all exercises with optional filters
-router.get('/', (req, res) => {
+router.get('/', (req: Request<object, object, object, ExerciseQuery>, res: Response) => {
   try {
-    const { bodyPart, equipment, level, type, limit = 50, offset = 0 } = req.query;
+    const { bodyPart, equipment, level, type, limit = '50', offset = '0' } = req.query;
 
     let sql = 'SELECT * FROM exercises WHERE 1=1';
-    const params = [];
+    const params: unknown[] = [];
 
+    // TODO: Pass bodyPart, equipment, level, type through upper-case function to match DB values
     if (bodyPart) {
       sql += ' AND body_part = ?';
       params.push(bodyPart);
@@ -31,11 +53,11 @@ router.get('/', (req, res) => {
     sql += ' LIMIT ? OFFSET ?';
     params.push(parseInt(limit), parseInt(offset));
 
-    const exercises = all(sql, params);
+    const exercises = all<Exercise>(sql, params);
 
     // Get total count for pagination
     let countSql = 'SELECT COUNT(*) as total FROM exercises WHERE 1=1';
-    const countParams = [];
+    const countParams: unknown[] = [];
     if (bodyPart) {
       countSql += ' AND body_part = ?';
       countParams.push(bodyPart);
@@ -53,7 +75,7 @@ router.get('/', (req, res) => {
       countParams.push(type);
     }
 
-    const countResult = get(countSql, countParams);
+    const countResult = get<{ total: number }>(countSql, countParams);
 
     res.json({
       exercises,
@@ -70,12 +92,12 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/exercises/filters - Get available filter options
-router.get('/filters', (req, res) => {
+router.get('/filters', (_req: Request, res: Response) => {
   try {
-    const bodyParts = all('SELECT DISTINCT body_part FROM exercises WHERE body_part IS NOT NULL ORDER BY body_part');
-    const equipment = all('SELECT DISTINCT equipment FROM exercises WHERE equipment IS NOT NULL ORDER BY equipment');
-    const levels = all('SELECT DISTINCT level FROM exercises WHERE level IS NOT NULL ORDER BY level');
-    const types = all('SELECT DISTINCT type FROM exercises WHERE type IS NOT NULL ORDER BY type');
+    const bodyParts = all<{ body_part: string }>('SELECT DISTINCT body_part FROM exercises WHERE body_part IS NOT NULL ORDER BY body_part');
+    const equipment = all<{ equipment: string }>('SELECT DISTINCT equipment FROM exercises WHERE equipment IS NOT NULL ORDER BY equipment');
+    const levels = all<{ level: string }>('SELECT DISTINCT level FROM exercises WHERE level IS NOT NULL ORDER BY level');
+    const types = all<{ type: string }>('SELECT DISTINCT type FROM exercises WHERE type IS NOT NULL ORDER BY type');
 
     res.json({
       bodyParts: bodyParts.map(r => r.body_part),
@@ -90,9 +112,9 @@ router.get('/filters', (req, res) => {
 });
 
 // GET /api/exercises/:id - Get single exercise
-router.get('/:id', (req, res) => {
+router.get('/:id', (req: Request<{ id: string }>, res: Response) => {
   try {
-    const exercise = get('SELECT * FROM exercises WHERE id = ?', [req.params.id]);
+    const exercise = get<Exercise>('SELECT * FROM exercises WHERE id = ?', [req.params.id]);
 
     if (!exercise) {
       return res.status(404).json({ error: 'Exercise not found' });
@@ -106,7 +128,7 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/exercises/:id/rate - Rate an exercise
-router.post('/:id/rate', (req, res) => {
+router.post('/:id/rate', (_req: Request, res: Response) => {
   // TODO: Implement in Phase 6 (requires auth)
   res.status(501).json({ message: 'Not implemented yet' });
 });

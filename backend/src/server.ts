@@ -1,14 +1,14 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import config from './config/env.js';
 import { initializeDatabase } from './config/database.js';
 
 // Import routes
-import authRoutes from './routes/auth.js';
-import exerciseRoutes from './routes/exercises.js';
-import workoutRoutes from './routes/workouts.js';
-import userRoutes from './routes/users.js';
+import authRoutes from './routes/auth';
+import exerciseRoutes from './routes/exercises';
+import workoutRoutes from './routes/workouts';
+import userRoutes from './routes/users';
 
 // Initialize Express app
 const app = express();
@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -33,12 +33,16 @@ app.use('/api/exercises', exerciseRoutes);
 // app.use('/api/users', userRoutes);
 
 // 404 handler
-app.use((req, res) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'Not found' });
 });
 
 // Error handler
-app.use((err, req, res, next) => {
+interface HttpError extends Error {
+  status?: number;
+}
+
+app.use((err: HttpError, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
     error: config.nodeEnv === 'development' ? err.message : 'Internal server error'
@@ -46,7 +50,7 @@ app.use((err, req, res, next) => {
 });
 
 // Initialize database and start server
-async function start() {
+async function start(): Promise<void> {
   try {
     await initializeDatabase();
     console.log('Database initialized successfully');

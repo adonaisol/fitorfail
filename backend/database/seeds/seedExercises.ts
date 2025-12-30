@@ -1,4 +1,4 @@
-import { initializeDatabase, closeDatabase, run, get, saveDatabase } from '../../src/config/database.js';
+import { initializeDatabase, closeDatabase, run, get } from '../../src/config/database.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,6 +8,18 @@ const __dirname = path.dirname(__filename);
 
 const exercisesPath = path.join(__dirname, '../../../dataset/allExercises.json');
 
+interface ExerciseData {
+  id: number;
+  title: string;
+  description: string | null;
+  type: string | null;
+  bodyPart: string | null;
+  equipment: string | null;
+  level: string | null;
+  rating: number | null;
+  ratingDesc: string | null;
+}
+
 console.log('Seeding exercises from dataset...');
 
 try {
@@ -16,7 +28,7 @@ try {
 
   // Read exercises from JSON file
   const exercisesJson = fs.readFileSync(exercisesPath, 'utf-8');
-  const exercises = JSON.parse(exercisesJson);
+  const exercises: ExerciseData[] = JSON.parse(exercisesJson);
 
   console.log(`Found ${exercises.length} exercises to import`);
 
@@ -44,12 +56,12 @@ try {
         console.log(`Inserted ${inserted} exercises...`);
       }
     } catch (err) {
-      console.error(`Failed to insert exercise ${exercise.id}:`, err.message);
+      console.error(`Failed to insert exercise ${exercise.id}:`, (err as Error).message);
     }
   }
 
   // Verify count
-  const countResult = get('SELECT COUNT(*) as count FROM exercises');
+  const countResult = get<{ count: number }>('SELECT COUNT(*) as count FROM exercises');
   console.log(`Successfully imported ${countResult?.count || 0} exercises!`);
 
 } catch (error) {

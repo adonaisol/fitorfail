@@ -1,4 +1,4 @@
-import initSqlJs from 'sql.js';
+import initSqlJs, { Database as SqlJsDatabase, SqlJsStatic } from 'sql.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -8,17 +8,17 @@ const __dirname = path.dirname(__filename);
 
 const dbPath = path.join(__dirname, '../../database/fitorfail.db');
 
-let db = null;
-let SQL = null;
+let db: SqlJsDatabase | null = null;
+let SQL: SqlJsStatic | null = null;
 
-export async function getDatabase() {
+export async function getDatabase(): Promise<SqlJsDatabase> {
   if (!db) {
     await initializeDatabase();
   }
-  return db;
+  return db!;
 }
 
-export async function initializeDatabase() {
+export async function initializeDatabase(): Promise<SqlJsDatabase> {
   if (!SQL) {
     SQL = await initSqlJs();
   }
@@ -51,7 +51,7 @@ export async function initializeDatabase() {
   return db;
 }
 
-export function saveDatabase() {
+export function saveDatabase(): void {
   if (db) {
     const data = db.export();
     const buffer = Buffer.from(data);
@@ -59,7 +59,7 @@ export function saveDatabase() {
   }
 }
 
-export function closeDatabase() {
+export function closeDatabase(): void {
   if (db) {
     saveDatabase();
     db.close();
@@ -68,30 +68,33 @@ export function closeDatabase() {
 }
 
 // Helper to run a query and return all results
-export function all(sql, params = []) {
+export function all<T = Record<string, unknown>>(sql: string, params: unknown[] = []): T[] {
+  if (!db) throw new Error('Database not initialized');
   const stmt = db.prepare(sql);
   if (params.length > 0) {
     stmt.bind(params);
   }
-  const results = [];
+  const results: T[] = [];
   while (stmt.step()) {
-    results.push(stmt.getAsObject());
+    results.push(stmt.getAsObject() as T);
   }
   stmt.free();
   return results;
 }
 
 // Helper to run a query and return first result
-export function get(sql, params = []) {
-  const results = all(sql, params);
+export function get<T = Record<string, unknown>>(sql: string, params: unknown[] = []): T | null {
+  const results = all<T>(sql, params);
   return results.length > 0 ? results[0] : null;
 }
 
 // Helper to run a query that doesn't return results
-export function run(sql, params = []) {
+export function run(sql: string, params: unknown[] = []): { lastInsertRowid: number | null } {
+  if (!db) throw new Error('Database not initialized');
   db.run(sql, params);
   saveDatabase();
-  return { lastInsertRowid: db.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0] };
+  const result = db.exec("SELECT last_insert_rowid()");
+  return { lastInsertRowid: result[0]?.values[0]?.[0] as number | null };
 }
 
 export default { getDatabase, initializeDatabase, closeDatabase, saveDatabase, all, get, run };
