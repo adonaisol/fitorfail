@@ -8,7 +8,9 @@ import ConfirmDialog from '../common/ConfirmDialog';
 interface WeeklyPlanViewProps {
   plan: WorkoutPlan;
   onRefreshPlan: (planId: number) => Promise<void>;
+  onRefreshIncompleteDays: (planId: number) => Promise<number[]>;
   onRefreshDay: (planId: number, dayNumber: number) => Promise<WorkoutDay | void>;
+  onRefreshUncompleted: (planId: number, dayNumber: number) => Promise<WorkoutDay | void>;
   onCompleteExercise: (sessionExerciseId: number) => Promise<void>;
   onUncompleteExercise: (sessionExerciseId: number) => Promise<void>;
   isRefreshing?: boolean;
@@ -17,7 +19,9 @@ interface WeeklyPlanViewProps {
 export default function WeeklyPlanView({
   plan,
   onRefreshPlan,
+  onRefreshIncompleteDays,
   onRefreshDay,
+  onRefreshUncompleted,
   onCompleteExercise,
   onUncompleteExercise,
   isRefreshing = false
@@ -33,6 +37,14 @@ export default function WeeklyPlanView({
   );
   const progressPercent = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
   const isComplete = completedExercises === totalExercises && totalExercises > 0;
+
+  // Calculate incomplete days
+  const incompleteDays = plan.days.filter(day =>
+    day.exercises.some(e => !e.completed)
+  );
+  const completedDays = plan.days.filter(day =>
+    day.exercises.length > 0 && day.exercises.every(e => e.completed)
+  );
 
   const handleRefreshAllClick = () => {
     if (completedExercises > 0) {
@@ -53,6 +65,43 @@ export default function WeeklyPlanView({
     } finally {
       setIsRefreshingAll(false);
     }
+  };
+
+  const handleRefreshIncompleteDays = async () => {
+    setShowRefreshAllConfirm(false);
+    setIsRefreshingAll(true);
+    try {
+      const refreshedDays = await onRefreshIncompleteDays(plan.planId);
+      if (refreshedDays.length > 0) {
+        toast.success(`Refreshed ${refreshedDays.length} incomplete day${refreshedDays.length === 1 ? '' : 's'}`);
+      } else {
+        toast.success('All days are already complete');
+      }
+    } catch {
+      toast.error('Failed to refresh incomplete days');
+    } finally {
+      setIsRefreshingAll(false);
+    }
+  };
+
+  const getRefreshDialogActions = () => {
+    const actions = [];
+
+    if (incompleteDays.length > 0 && completedDays.length > 0) {
+      actions.push({
+        label: `Refresh ${incompleteDays.length} Incomplete Day${incompleteDays.length === 1 ? '' : 's'}`,
+        variant: 'default' as const,
+        onClick: handleRefreshIncompleteDays
+      });
+    }
+
+    actions.push({
+      label: 'Refresh All Days',
+      variant: 'danger' as const,
+      onClick: handleRefreshAll
+    });
+
+    return actions;
   };
 
   // Format date
@@ -135,6 +184,7 @@ export default function WeeklyPlanView({
             day={day}
             planId={plan.planId}
             onRefreshDay={onRefreshDay}
+            onRefreshUncompleted={onRefreshUncompleted}
             onCompleteExercise={onCompleteExercise}
             onUncompleteExercise={onUncompleteExercise}
           />
@@ -144,13 +194,12 @@ export default function WeeklyPlanView({
       {/* Refresh all confirmation dialog */}
       <ConfirmDialog
         isOpen={showRefreshAllConfirm}
-        title="Refresh All Days?"
-        message={`You have ${completedExercises} completed exercise${completedExercises === 1 ? '' : 's'}. Refreshing will replace all exercises and reset your progress for the entire week.`}
-        confirmLabel="Refresh All"
+        title="Refresh Week?"
+        message={`You have ${completedExercises} completed exercise${completedExercises === 1 ? '' : 's'} across ${completedDays.length} completed day${completedDays.length === 1 ? '' : 's'}. Choose how to refresh:`}
         cancelLabel="Cancel"
         variant="danger"
-        onConfirm={handleRefreshAll}
         onCancel={() => setShowRefreshAllConfirm(false)}
+        actions={getRefreshDialogActions()}
       />
     </div>
   );

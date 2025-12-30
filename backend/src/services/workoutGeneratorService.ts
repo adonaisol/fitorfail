@@ -667,6 +667,151 @@ export function uncompleteExercise(
   return true;
 }
 
+/**
+ * Refresh only uncompleted exercises in a day
+ */
+export function refreshUncompletedExercises(planId: number, dayNumber: number, userId: number): DayPlan | null {
+  // Verify ownership
+  const plan = get<{ id: number; workout_days: number }>(
+    'SELECT id, workout_days FROM workout_plans WHERE id = ? AND user_id = ?',
+    [planId, userId]
+  );
+
+  if (!plan) {
+    return null;
+  }
+
+  // Get the session
+  const session = get<{ id: number; day_name: string; focus_body_parts: string }>(
+    'SELECT id, day_name, focus_body_parts FROM workout_sessions WHERE plan_id = ? AND day_number = ?',
+    [planId, dayNumber]
+  );
+
+  if (!session) {
+    return null;
+  }
+
+  // Get uncompleted exercises in this session
+  const uncompletedExercises = all<{ id: number; exercise_id: number; order_index: number }>(
+    'SELECT id, exercise_id, order_index FROM session_exercises WHERE session_id = ? AND completed = 0',
+    [session.id]
+  );
+
+  if (uncompletedExercises.length === 0) {
+    // All exercises are completed, return current state
+    const currentPlan = getWorkoutPlan(planId, userId);
+    return currentPlan?.days.find(d => d.dayNumber === dayNumber) || null;
+  }
+
+  // Delete uncompleted exercises
+  run('DELETE FROM session_exercises WHERE session_id = ? AND completed = 0', [session.id]);
+
+  // Load user context
+  const context = loadUserContext(userId);
+
+  // Get all currently used exercises (completed ones in this session + all exercises in other days)
+  const usedInSession = all<{ exercise_id: number }>(
+    'SELECT exercise_id FROM session_exercises WHERE session_id = ?',
+    [session.id]
+  );
+  const usedInOtherDays = all<{ exercise_id: number }>(
+    `SELECT se.exercise_id FROM session_exercises se
+     JOIN workout_sessions ws ON se.session_id = ws.id
+     WHERE ws.plan_id = ? AND ws.day_number != ?`,
+    [planId, dayNumber]
+  );
+  const usedExerciseIds = new Set([
+    ...usedInSession.map(e => e.exercise_id),
+    ...usedInOtherDays.map(e => e.exercise_id)
+  ]);
+
+  // Get strategy for this day
+  const strategy = SPLIT_STRATEGIES[plan.workout_days as 3 | 4 | 5];
+  const dayStrategy = strategy.find(d => d.dayNumber === dayNumber);
+
+  if (!dayStrategy) {
+    return null;
+  }
+
+  // Select new exercises to replace the uncompleted ones
+  const newExercises = selectExercises(
+    dayStrategy.bodyParts,
+    uncompletedExercises.length,
+    context,
+    usedExerciseIds
+  );
+
+  // Get the highest current order_index
+  const maxOrder = get<{ max_order: number }>(
+    'SELECT COALESCE(MAX(order_index), 0) as max_order FROM session_exercises WHERE session_id = ?',
+    [session.id]
+  );
+  let orderIndex = (maxOrder?.max_order || 0) + 1;
+
+  // Add new exercises to session
+  for (const exercise of newExercises) {
+    let sets = 3;
+    let reps = '8-12';
+
+    if (exercise.type === 'Powerlifting') {
+      sets = 5;
+      reps = '3-5';
+    } else if (exercise.type === 'Plyometrics') {
+      sets = 3;
+      reps = '10-15';
+    } else if (exercise.body_part === 'Abdominals') {
+      sets = 3;
+      reps = '15-20';
+    }
+
+    run(
+      `INSERT INTO session_exercises (session_id, exercise_id, order_index, sets, reps)
+       VALUES (?, ?, ?, ?, ?)`,
+      [session.id, exercise.id, orderIndex++, sets, reps]
+    );
+  }
+
+  // Return updated day
+  const currentPlan = getWorkoutPlan(planId, userId);
+  return currentPlan?.days.find(d => d.dayNumber === dayNumber) || null;
+}
+
+/**
+ * Refresh only incomplete days in a plan (days with at least one uncompleted exercise)
+ */
+export function refreshIncompleteDays(planId: number, userId: number): { refreshedDays: number[]; plan: GeneratedPlan | null } {
+  // Verify ownership
+  const plan = get<{ id: number; workout_days: number }>(
+    'SELECT id, workout_days FROM workout_plans WHERE id = ? AND user_id = ?',
+    [planId, userId]
+  );
+
+  if (!plan) {
+    return { refreshedDays: [], plan: null };
+  }
+
+  // Get days that have at least one uncompleted exercise
+  const incompleteDays = all<{ day_number: number }>(
+    `SELECT DISTINCT ws.day_number FROM workout_sessions ws
+     JOIN session_exercises se ON ws.id = se.session_id
+     WHERE ws.plan_id = ? AND se.completed = 0
+     ORDER BY ws.day_number`,
+    [planId]
+  );
+
+  const refreshedDays: number[] = [];
+
+  for (const day of incompleteDays) {
+    refreshDay(planId, day.day_number, userId);
+    refreshedDays.push(day.day_number);
+  }
+
+  return {
+    refreshedDays,
+    plan: getWorkoutPlan(planId, userId)
+  };
+}
+
 export default {
   generateWorkoutPlan,
   getWorkoutPlan,
@@ -674,5 +819,7 @@ export default {
   activatePlan,
   refreshDay,
   completeExercise,
-  uncompleteExercise
+  uncompleteExercise,
+  refreshUncompletedExercises,
+  refreshIncompleteDays
 };

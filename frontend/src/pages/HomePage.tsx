@@ -14,7 +14,9 @@ export default function HomePage(): JSX.Element {
     error,
     fetchCurrentPlan,
     refreshPlan,
+    refreshIncompleteDays,
     refreshDay,
+    refreshUncompletedExercises,
     completeExercise,
     uncompleteExercise,
     clearError
@@ -75,7 +77,9 @@ export default function HomePage(): JSX.Element {
         <WeeklyPlanView
           plan={currentPlan}
           onRefreshPlan={refreshPlan}
+          onRefreshIncompleteDays={refreshIncompleteDays}
           onRefreshDay={refreshDay}
+          onRefreshUncompleted={refreshUncompletedExercises}
           onCompleteExercise={completeExercise}
           onUncompleteExercise={uncompleteExercise}
           isRefreshing={isLoading}

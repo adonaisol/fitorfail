@@ -9,30 +9,33 @@ interface DayCardProps {
   day: WorkoutDay;
   planId: number;
   onRefreshDay: (planId: number, dayNumber: number) => Promise<WorkoutDay | void>;
+  onRefreshUncompleted: (planId: number, dayNumber: number) => Promise<WorkoutDay | void>;
   onCompleteExercise: (sessionExerciseId: number) => Promise<void>;
   onUncompleteExercise: (sessionExerciseId: number) => Promise<void>;
 }
 
-export default function DayCard({ day, planId, onRefreshDay, onCompleteExercise, onUncompleteExercise }: DayCardProps): JSX.Element {
+export default function DayCard({ day, planId, onRefreshDay, onRefreshUncompleted, onCompleteExercise, onUncompleteExercise }: DayCardProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
 
   const completedCount = day.exercises.filter(e => e.completed).length;
   const totalCount = day.exercises.length;
+  const uncompletedCount = totalCount - completedCount;
   const isComplete = completedCount === totalCount && totalCount > 0;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   const hasCompletedExercises = completedCount > 0;
+  const hasUncompletedExercises = uncompletedCount > 0;
 
   const handleRefreshClick = () => {
     if (hasCompletedExercises) {
       setShowRefreshConfirm(true);
     } else {
-      handleRefresh();
+      handleRefreshAll();
     }
   };
 
-  const handleRefresh = async () => {
+  const handleRefreshAll = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
     setShowRefreshConfirm(false);
@@ -44,6 +47,40 @@ export default function DayCard({ day, planId, onRefreshDay, onCompleteExercise,
     } finally {
       setIsRefreshing(false);
     }
+  };
+
+  const handleRefreshUncompleted = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    setShowRefreshConfirm(false);
+    try {
+      await onRefreshUncompleted(planId, day.dayNumber);
+      toast.success(`Refreshed ${uncompletedCount} uncompleted exercise${uncompletedCount === 1 ? '' : 's'}`);
+    } catch {
+      toast.error('Failed to refresh uncompleted exercises');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const getRefreshDialogActions = () => {
+    const actions = [];
+
+    if (hasUncompletedExercises) {
+      actions.push({
+        label: `Refresh ${uncompletedCount} Uncompleted`,
+        variant: 'default' as const,
+        onClick: handleRefreshUncompleted
+      });
+    }
+
+    actions.push({
+      label: 'Refresh All Exercises',
+      variant: 'warning' as const,
+      onClick: handleRefreshAll
+    });
+
+    return actions;
   };
 
   return (
@@ -124,12 +161,11 @@ export default function DayCard({ day, planId, onRefreshDay, onCompleteExercise,
       <ConfirmDialog
         isOpen={showRefreshConfirm}
         title="Refresh Day?"
-        message={`You have ${completedCount} completed exercise${completedCount === 1 ? '' : 's'} in this day. Refreshing will replace all exercises and reset your progress.`}
-        confirmLabel="Refresh"
+        message={`You have ${completedCount} completed exercise${completedCount === 1 ? '' : 's'} in this day. Choose how to refresh:`}
         cancelLabel="Cancel"
         variant="warning"
-        onConfirm={handleRefresh}
         onCancel={() => setShowRefreshConfirm(false)}
+        actions={getRefreshDialogActions()}
       />
     </div>
   );

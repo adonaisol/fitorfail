@@ -98,6 +98,16 @@ export const workoutApi = {
     return response.data;
   },
 
+  refreshUncompletedExercises: async (planId: number, dayNumber: number): Promise<{ message: string; day: WorkoutDay }> => {
+    const response = await api.post<{ message: string; day: WorkoutDay }>(`/workouts/${planId}/days/${dayNumber}/refresh-uncompleted`);
+    return response.data;
+  },
+
+  refreshIncompleteDays: async (planId: number): Promise<{ message: string; refreshedDays: number[]; plan: WorkoutPlan }> => {
+    const response = await api.post<{ message: string; refreshedDays: number[]; plan: WorkoutPlan }>(`/workouts/${planId}/refresh-incomplete`);
+    return response.data;
+  },
+
   completeExercise: async (sessionExerciseId: number, setsCompleted?: number): Promise<{ message: string }> => {
     const response = await api.put<{ message: string }>(`/workouts/exercises/${sessionExerciseId}/complete`, { setsCompleted });
     return response.data;

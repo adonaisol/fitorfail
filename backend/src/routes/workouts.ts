@@ -7,7 +7,9 @@ import {
   activatePlan,
   refreshDay,
   completeExercise,
-  uncompleteExercise
+  uncompleteExercise,
+  refreshUncompletedExercises,
+  refreshIncompleteDays
 } from '../services/workoutGeneratorService.js';
 import { all, get } from '../config/database.js';
 
@@ -210,6 +212,66 @@ router.post('/:planId/days/:dayNumber/refresh', (req: Request, res: Response) =>
   } catch (error) {
     console.error('Error refreshing day:', error);
     res.status(500).json({ error: 'Failed to refresh day' });
+  }
+});
+
+// POST /api/workouts/:planId/days/:dayNumber/refresh-uncompleted - Refresh only uncompleted exercises
+router.post('/:planId/days/:dayNumber/refresh-uncompleted', (req: Request, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const planId = parseInt(req.params.planId);
+    const dayNumber = parseInt(req.params.dayNumber);
+
+    if (isNaN(planId) || isNaN(dayNumber)) {
+      res.status(400).json({ error: 'Invalid plan ID or day number' });
+      return;
+    }
+
+    const day = refreshUncompletedExercises(planId, dayNumber, userId);
+
+    if (!day) {
+      res.status(404).json({ error: 'Day not found' });
+      return;
+    }
+
+    res.json({
+      message: 'Uncompleted exercises refreshed successfully',
+      day
+    });
+  } catch (error) {
+    console.error('Error refreshing uncompleted exercises:', error);
+    res.status(500).json({ error: 'Failed to refresh uncompleted exercises' });
+  }
+});
+
+// POST /api/workouts/:id/refresh-incomplete - Refresh only incomplete days
+router.post('/:id/refresh-incomplete', (req: Request, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const planId = parseInt(req.params.id);
+
+    if (isNaN(planId)) {
+      res.status(400).json({ error: 'Invalid plan ID' });
+      return;
+    }
+
+    const result = refreshIncompleteDays(planId, userId);
+
+    if (!result.plan) {
+      res.status(404).json({ error: 'Plan not found' });
+      return;
+    }
+
+    res.json({
+      message: result.refreshedDays.length > 0
+        ? `Refreshed ${result.refreshedDays.length} incomplete day${result.refreshedDays.length === 1 ? '' : 's'}`
+        : 'All days are already complete',
+      refreshedDays: result.refreshedDays,
+      plan: result.plan
+    });
+  } catch (error) {
+    console.error('Error refreshing incomplete days:', error);
+    res.status(500).json({ error: 'Failed to refresh incomplete days' });
   }
 });
 

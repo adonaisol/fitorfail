@@ -10,7 +10,9 @@ interface WorkoutContextType {
   generatePlan: (workoutDays?: number) => Promise<WorkoutPlan>;
   activatePlan: (planId: number) => Promise<void>;
   refreshPlan: (planId: number) => Promise<void>;
+  refreshIncompleteDays: (planId: number) => Promise<number[]>;
   refreshDay: (planId: number, dayNumber: number) => Promise<WorkoutDay>;
+  refreshUncompletedExercises: (planId: number, dayNumber: number) => Promise<WorkoutDay>;
   completeExercise: (sessionExerciseId: number, setsCompleted?: number) => Promise<void>;
   uncompleteExercise: (sessionExerciseId: number) => Promise<void>;
   clearError: () => void;
@@ -92,10 +94,44 @@ export function WorkoutProvider({ children }: WorkoutProviderProps): JSX.Element
     }
   }, []);
 
+  const refreshIncompleteDays = useCallback(async (planId: number): Promise<number[]> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await workoutApi.refreshIncompleteDays(planId);
+      setCurrentPlan(response.plan);
+      return response.refreshedDays;
+    } catch (err) {
+      setError(getErrorMessage(err));
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const refreshDay = useCallback(async (planId: number, dayNumber: number): Promise<WorkoutDay> => {
     setError(null);
     try {
       const response = await workoutApi.refreshDay(planId, dayNumber);
+      // Update the current plan with the refreshed day
+      setCurrentPlan(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          days: prev.days.map(d => d.dayNumber === dayNumber ? response.day : d)
+        };
+      });
+      return response.day;
+    } catch (err) {
+      setError(getErrorMessage(err));
+      throw err;
+    }
+  }, []);
+
+  const refreshUncompletedExercises = useCallback(async (planId: number, dayNumber: number): Promise<WorkoutDay> => {
+    setError(null);
+    try {
+      const response = await workoutApi.refreshUncompletedExercises(planId, dayNumber);
       // Update the current plan with the refreshed day
       setCurrentPlan(prev => {
         if (!prev) return prev;
@@ -169,7 +205,9 @@ export function WorkoutProvider({ children }: WorkoutProviderProps): JSX.Element
     generatePlan,
     activatePlan,
     refreshPlan,
+    refreshIncompleteDays,
     refreshDay,
+    refreshUncompletedExercises,
     completeExercise,
     uncompleteExercise,
     clearError
