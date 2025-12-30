@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Dumbbell, User } from 'lucide-react';
+import { Dumbbell, User, LogOut } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Header(): JSX.Element {
+  const { user, logout } = useAuth();
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40 pt-safe">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -22,9 +25,23 @@ export default function Header(): JSX.Element {
           </Link>
         </nav>
 
-        <Link to="/profile" className="md:hidden p-2 rounded-full hover:bg-gray-100">
-          <User className="w-6 h-6 text-gray-600" />
-        </Link>
+        <div className="flex items-center gap-3">
+          {user && (
+            <span className="hidden sm:block text-sm text-gray-600">
+              {user.username}
+            </span>
+          )}
+          <button
+            onClick={logout}
+            className="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-red-500"
+            title="Logout"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+          <Link to="/profile" className="md:hidden p-2 rounded-full hover:bg-gray-100">
+            <User className="w-6 h-6 text-gray-600" />
+          </Link>
+        </div>
       </div>
     </header>
   );

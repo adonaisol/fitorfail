@@ -1,13 +1,20 @@
 import { Link } from 'react-router-dom';
 import { Dumbbell, Plus } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function HomePage(): JSX.Element {
+  const { user } = useAuth();
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Welcome to FitOrFail</h1>
-        <p className="text-gray-600 mt-1">Your personalized workout planner</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Welcome back, {user?.username || 'User'}!
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Fitness Level: <span className="font-medium text-primary-500">{user?.skillLevel || 'Unknown'}</span>
+        </p>
       </div>
 
       {/* No Workout Plan State */}
