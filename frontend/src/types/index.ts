@@ -1,0 +1,59 @@
+// User types
+export interface User {
+  id: number;
+  username: string;
+  skillLevel: 'Beginner' | 'Intermediate' | 'Expert';
+  createdAt: string;
+}
+
+// Auth types
+export interface AuthResponse {
+  message: string;
+  user: User;
+  token: string;
+}
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+export interface RegisterCredentials {
+  username: string;
+  password: string;
+  skillLevel?: 'Beginner' | 'Intermediate' | 'Expert';
+}
+
+// Exercise types
+export interface Exercise {
+  id: number;
+  title: string;
+  description: string | null;
+  type: string | null;
+  body_part: string | null;
+  equipment: string | null;
+  level: string | null;
+  rating: number | null;
+  rating_desc: string | null;
+}
+
+export interface ExerciseFilters {
+  bodyParts: string[];
+  equipment: string[];
+  levels: string[];
+  types: string[];
+}
+
+export interface PaginatedResponse<T> {
+  exercises: T[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
+}
+
+// API Error
+export interface ApiError {
+  error: string;
+}

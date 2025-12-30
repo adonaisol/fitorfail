@@ -1,13 +1,24 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Dumbbell, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LoginFormData {
   username: string;
   password: string;
 }
 
+interface LocationState {
+  from?: {
+    pathname: string;
+  };
+}
+
 export default function LoginPage(): JSX.Element {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated } = useAuth();
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<LoginFormData>({
     username: '',
@@ -15,6 +26,13 @@ export default function LoginPage(): JSX.Element {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    const state = location.state as LocationState;
+    const from = state?.from?.pathname || '/';
+    navigate(from, { replace: true });
+  }
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,13 +44,14 @@ export default function LoginPage(): JSX.Element {
     setLoading(true);
     setError('');
 
-    // TODO: Implement actual login in Phase 2
     try {
-      // Placeholder - will be replaced with actual API call
-      console.log('Login attempt:', formData);
-      setError('Login not implemented yet. Coming in Phase 2!');
-    } catch {
-      setError('Login failed. Please try again.');
+      await login(formData);
+      // Navigate to the page they tried to visit or home
+      const state = location.state as LocationState;
+      const from = state?.from?.pathname || '/';
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -81,6 +100,7 @@ export default function LoginPage(): JSX.Element {
                 value={formData.username}
                 onChange={handleChange}
                 placeholder="Enter your username"
+                autoComplete="username"
               />
             </div>
 
@@ -98,6 +118,7 @@ export default function LoginPage(): JSX.Element {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"

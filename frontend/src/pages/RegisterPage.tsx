@@ -1,6 +1,7 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Dumbbell, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface RegisterFormData {
   username: string;
@@ -10,6 +11,9 @@ interface RegisterFormData {
 }
 
 export default function RegisterPage(): JSX.Element {
+  const navigate = useNavigate();
+  const { register, isAuthenticated } = useAuth();
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<RegisterFormData>({
     username: '',
@@ -19,6 +23,11 @@ export default function RegisterPage(): JSX.Element {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    navigate('/', { replace: true });
+  }
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -42,13 +51,15 @@ export default function RegisterPage(): JSX.Element {
       return;
     }
 
-    // TODO: Implement actual registration in Phase 2
     try {
-      // Placeholder - will be replaced with actual API call
-      console.log('Register attempt:', formData);
-      setError('Registration not implemented yet. Coming in Phase 2!');
-    } catch {
-      setError('Registration failed. Please try again.');
+      await register({
+        username: formData.username,
+        password: formData.password,
+        skillLevel: formData.skillLevel
+      });
+      navigate('/', { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -97,6 +108,7 @@ export default function RegisterPage(): JSX.Element {
                 value={formData.username}
                 onChange={handleChange}
                 placeholder="Choose a username"
+                autoComplete="username"
               />
             </div>
 
@@ -114,6 +126,7 @@ export default function RegisterPage(): JSX.Element {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Create a password"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -138,6 +151,7 @@ export default function RegisterPage(): JSX.Element {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Confirm your password"
+                autoComplete="new-password"
               />
             </div>
 
