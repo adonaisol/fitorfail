@@ -57,3 +57,42 @@ export interface PaginatedResponse<T> {
 export interface ApiError {
   error: string;
 }
+
+// Workout types
+export interface SessionExercise {
+  sessionExerciseId: number;
+  exerciseId: number;
+  orderIndex: number;
+  sets: number;
+  reps: string;
+  completed: boolean;
+  title: string;
+  description: string | null;
+  type: string | null;
+  bodyPart: string | null;
+  equipment: string | null;
+  level: string | null;
+}
+
+export interface WorkoutDay {
+  dayNumber: number;
+  dayName: string;
+  focusBodyParts: string[];
+  exercises: SessionExercise[];
+}
+
+export interface WorkoutPlan {
+  planId: number;
+  weekStartDate: string;
+  workoutDays: number;
+  status: 'draft' | 'active' | 'completed';
+  days: WorkoutDay[];
+}
+
+export interface WorkoutPlanSummary {
+  id: number;
+  week_start_date: string;
+  workout_days: number;
+  status: string;
+  created_at: string;
+}

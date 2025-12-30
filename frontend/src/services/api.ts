@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from '../types';
+import type { AuthResponse, LoginCredentials, RegisterCredentials, User, WorkoutPlan, WorkoutDay, WorkoutPlanSummary } from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -51,6 +51,49 @@ export const authApi = {
 
   me: async (): Promise<{ user: User }> => {
     const response = await api.get<{ user: User }>('/auth/me');
+    return response.data;
+  }
+};
+
+// Workout API
+export const workoutApi = {
+  generate: async (workoutDays?: number): Promise<{ message: string; plan: WorkoutPlan }> => {
+    const response = await api.post<{ message: string; plan: WorkoutPlan }>('/workouts/generate', { workoutDays });
+    return response.data;
+  },
+
+  getCurrent: async (): Promise<{ plan: WorkoutPlan }> => {
+    const response = await api.get<{ plan: WorkoutPlan }>('/workouts/current');
+    return response.data;
+  },
+
+  getById: async (planId: number): Promise<{ plan: WorkoutPlan }> => {
+    const response = await api.get<{ plan: WorkoutPlan }>(`/workouts/${planId}`);
+    return response.data;
+  },
+
+  activate: async (planId: number): Promise<{ message: string; plan: WorkoutPlan }> => {
+    const response = await api.put<{ message: string; plan: WorkoutPlan }>(`/workouts/${planId}/activate`);
+    return response.data;
+  },
+
+  refreshPlan: async (planId: number): Promise<{ message: string; plan: WorkoutPlan }> => {
+    const response = await api.post<{ message: string; plan: WorkoutPlan }>(`/workouts/${planId}/refresh`);
+    return response.data;
+  },
+
+  refreshDay: async (planId: number, dayNumber: number): Promise<{ message: string; day: WorkoutDay }> => {
+    const response = await api.post<{ message: string; day: WorkoutDay }>(`/workouts/${planId}/days/${dayNumber}/refresh`);
+    return response.data;
+  },
+
+  completeExercise: async (sessionExerciseId: number, setsCompleted?: number): Promise<{ message: string }> => {
+    const response = await api.put<{ message: string }>(`/workouts/exercises/${sessionExerciseId}/complete`, { setsCompleted });
+    return response.data;
+  },
+
+  getHistory: async (limit = 10, offset = 0): Promise<{ plans: WorkoutPlanSummary[]; pagination: { total: number; limit: number; offset: number } }> => {
+    const response = await api.get<{ plans: WorkoutPlanSummary[]; pagination: { total: number; limit: number; offset: number } }>(`/workouts/history?limit=${limit}&offset=${offset}`);
     return response.data;
   }
 };
