@@ -1,29 +1,46 @@
 import { useState } from 'react';
 import { RefreshCw, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type { WorkoutDay } from '../../types';
 import ExerciseCard from './ExerciseCard';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 interface DayCardProps {
   day: WorkoutDay;
   planId: number;
   onRefreshDay: (planId: number, dayNumber: number) => Promise<WorkoutDay | void>;
   onCompleteExercise: (sessionExerciseId: number) => Promise<void>;
+  onUncompleteExercise: (sessionExerciseId: number) => Promise<void>;
 }
 
-export default function DayCard({ day, planId, onRefreshDay, onCompleteExercise }: DayCardProps): JSX.Element {
+export default function DayCard({ day, planId, onRefreshDay, onCompleteExercise, onUncompleteExercise }: DayCardProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
 
   const completedCount = day.exercises.filter(e => e.completed).length;
   const totalCount = day.exercises.length;
   const isComplete = completedCount === totalCount && totalCount > 0;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+  const hasCompletedExercises = completedCount > 0;
+
+  const handleRefreshClick = () => {
+    if (hasCompletedExercises) {
+      setShowRefreshConfirm(true);
+    } else {
+      handleRefresh();
+    }
+  };
 
   const handleRefresh = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
+    setShowRefreshConfirm(false);
     try {
       await onRefreshDay(planId, day.dayNumber);
+      toast.success(`${day.dayName} refreshed`);
+    } catch {
+      toast.error('Failed to refresh day');
     } finally {
       setIsRefreshing(false);
     }
@@ -60,7 +77,7 @@ export default function DayCard({ day, planId, onRefreshDay, onCompleteExercise 
 
             {/* Refresh button */}
             <button
-              onClick={handleRefresh}
+              onClick={handleRefreshClick}
               disabled={isRefreshing}
               className="p-2 text-gray-400 hover:text-primary-500 hover:bg-gray-100 rounded-lg transition-colors"
               title="Refresh exercises"
@@ -97,10 +114,23 @@ export default function DayCard({ day, planId, onRefreshDay, onCompleteExercise 
               key={exercise.sessionExerciseId}
               exercise={exercise}
               onComplete={onCompleteExercise}
+              onUncomplete={onUncompleteExercise}
             />
           ))}
         </div>
       )}
+
+      {/* Refresh confirmation dialog */}
+      <ConfirmDialog
+        isOpen={showRefreshConfirm}
+        title="Refresh Day?"
+        message={`You have ${completedCount} completed exercise${completedCount === 1 ? '' : 's'} in this day. Refreshing will replace all exercises and reset your progress.`}
+        confirmLabel="Refresh"
+        cancelLabel="Cancel"
+        variant="warning"
+        onConfirm={handleRefresh}
+        onCancel={() => setShowRefreshConfirm(false)}
+      />
     </div>
   );
 }

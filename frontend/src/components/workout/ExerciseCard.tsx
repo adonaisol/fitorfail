@@ -1,23 +1,42 @@
 import { useState } from 'react';
 import { Check, ChevronDown, ChevronUp, Dumbbell } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type { SessionExercise } from '../../types';
 
 interface ExerciseCardProps {
   exercise: SessionExercise;
   onComplete: (sessionExerciseId: number) => Promise<void>;
+  onUncomplete: (sessionExerciseId: number) => Promise<void>;
 }
 
-export default function ExerciseCard({ exercise, onComplete }: ExerciseCardProps): JSX.Element {
+export default function ExerciseCard({ exercise, onComplete, onUncomplete }: ExerciseCardProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isUncompleting, setIsUncompleting] = useState(false);
 
   const handleComplete = async () => {
     if (exercise.completed || isCompleting) return;
     setIsCompleting(true);
     try {
       await onComplete(exercise.sessionExerciseId);
+      toast.success(`${exercise.title} completed!`);
+    } catch {
+      toast.error('Failed to complete exercise');
     } finally {
       setIsCompleting(false);
+    }
+  };
+
+  const handleUncomplete = async () => {
+    if (!exercise.completed || isUncompleting) return;
+    setIsUncompleting(true);
+    try {
+      await onUncomplete(exercise.sessionExerciseId);
+      toast.success('Exercise unmarked');
+    } catch {
+      toast.error('Failed to undo completion');
+    } finally {
+      setIsUncompleting(false);
     }
   };
 
@@ -27,17 +46,26 @@ export default function ExerciseCard({ exercise, onComplete }: ExerciseCardProps
     }`}>
       {/* Header */}
       <div className="p-3 flex items-center gap-3">
-        {/* Complete button */}
+        {/* Complete/Undo button */}
         <button
-          onClick={handleComplete}
-          disabled={exercise.completed || isCompleting}
+          onClick={exercise.completed ? handleUncomplete : handleComplete}
+          disabled={isCompleting || isUncompleting}
           className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
             exercise.completed
-              ? 'bg-green-500 text-white'
+              ? 'bg-green-500 text-white hover:bg-green-600'
               : 'border-2 border-gray-300 hover:border-primary-500 hover:bg-primary-50'
           }`}
+          title={exercise.completed ? 'Undo completion' : 'Mark complete'}
         >
-          {exercise.completed && <Check className="w-5 h-5" />}
+          {exercise.completed ? (
+            isUncompleting ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Check className="w-5 h-5" />
+            )
+          ) : isCompleting ? (
+            <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+          ) : null}
         </button>
 
         {/* Exercise info */}

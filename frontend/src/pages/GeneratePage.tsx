@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dumbbell, Loader2, Check, ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useWorkout } from '../contexts/WorkoutContext';
 import type { WorkoutPlan } from '../types';
 
@@ -50,9 +51,11 @@ export default function GeneratePage(): JSX.Element {
     setError(null);
     try {
       await activatePlan(generatedPlan.planId);
+      toast.success('Workout plan activated!');
       navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to activate plan');
+      toast.error('Failed to activate plan');
       setStep('preview');
     }
   };

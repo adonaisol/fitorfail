@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { RefreshCw, Calendar, CheckCircle2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type { WorkoutPlan, WorkoutDay } from '../../types';
 import DayCard from './DayCard';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 interface WeeklyPlanViewProps {
   plan: WorkoutPlan;
   onRefreshPlan: (planId: number) => Promise<void>;
   onRefreshDay: (planId: number, dayNumber: number) => Promise<WorkoutDay | void>;
   onCompleteExercise: (sessionExerciseId: number) => Promise<void>;
+  onUncompleteExercise: (sessionExerciseId: number) => Promise<void>;
   isRefreshing?: boolean;
 }
 
@@ -15,8 +19,12 @@ export default function WeeklyPlanView({
   onRefreshPlan,
   onRefreshDay,
   onCompleteExercise,
+  onUncompleteExercise,
   isRefreshing = false
 }: WeeklyPlanViewProps): JSX.Element {
+  const [showRefreshAllConfirm, setShowRefreshAllConfirm] = useState(false);
+  const [isRefreshingAll, setIsRefreshingAll] = useState(false);
+
   // Calculate overall progress
   const totalExercises = plan.days.reduce((sum, day) => sum + day.exercises.length, 0);
   const completedExercises = plan.days.reduce(
@@ -25,6 +33,27 @@ export default function WeeklyPlanView({
   );
   const progressPercent = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
   const isComplete = completedExercises === totalExercises && totalExercises > 0;
+
+  const handleRefreshAllClick = () => {
+    if (completedExercises > 0) {
+      setShowRefreshAllConfirm(true);
+    } else {
+      handleRefreshAll();
+    }
+  };
+
+  const handleRefreshAll = async () => {
+    setShowRefreshAllConfirm(false);
+    setIsRefreshingAll(true);
+    try {
+      await onRefreshPlan(plan.planId);
+      toast.success('All days refreshed');
+    } catch {
+      toast.error('Failed to refresh plan');
+    } finally {
+      setIsRefreshingAll(false);
+    }
+  };
 
   // Format date
   const formatDate = (dateStr: string) => {
@@ -69,11 +98,11 @@ export default function WeeklyPlanView({
 
             {/* Refresh all button */}
             <button
-              onClick={() => onRefreshPlan(plan.planId)}
-              disabled={isRefreshing}
+              onClick={handleRefreshAllClick}
+              disabled={isRefreshing || isRefreshingAll}
               className="btn-secondary flex items-center gap-2"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isRefreshing || isRefreshingAll ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Refresh All</span>
             </button>
           </div>
@@ -107,9 +136,22 @@ export default function WeeklyPlanView({
             planId={plan.planId}
             onRefreshDay={onRefreshDay}
             onCompleteExercise={onCompleteExercise}
+            onUncompleteExercise={onUncompleteExercise}
           />
         ))}
       </div>
+
+      {/* Refresh all confirmation dialog */}
+      <ConfirmDialog
+        isOpen={showRefreshAllConfirm}
+        title="Refresh All Days?"
+        message={`You have ${completedExercises} completed exercise${completedExercises === 1 ? '' : 's'}. Refreshing will replace all exercises and reset your progress for the entire week.`}
+        confirmLabel="Refresh All"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={handleRefreshAll}
+        onCancel={() => setShowRefreshAllConfirm(false)}
+      />
     </div>
   );
 }

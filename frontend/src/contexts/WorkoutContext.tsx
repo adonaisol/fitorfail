@@ -12,6 +12,7 @@ interface WorkoutContextType {
   refreshPlan: (planId: number) => Promise<void>;
   refreshDay: (planId: number, dayNumber: number) => Promise<WorkoutDay>;
   completeExercise: (sessionExerciseId: number, setsCompleted?: number) => Promise<void>;
+  uncompleteExercise: (sessionExerciseId: number) => Promise<void>;
   clearError: () => void;
 }
 
@@ -135,6 +136,31 @@ export function WorkoutProvider({ children }: WorkoutProviderProps): JSX.Element
     }
   }, []);
 
+  const uncompleteExercise = useCallback(async (sessionExerciseId: number) => {
+    setError(null);
+    try {
+      await workoutApi.uncompleteExercise(sessionExerciseId);
+      // Update the current plan to mark exercise as not completed
+      setCurrentPlan(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          days: prev.days.map(day => ({
+            ...day,
+            exercises: day.exercises.map(ex =>
+              ex.sessionExerciseId === sessionExerciseId
+                ? { ...ex, completed: false }
+                : ex
+            )
+          }))
+        };
+      });
+    } catch (err) {
+      setError(getErrorMessage(err));
+      throw err;
+    }
+  }, []);
+
   const value: WorkoutContextType = {
     currentPlan,
     isLoading,
@@ -145,6 +171,7 @@ export function WorkoutProvider({ children }: WorkoutProviderProps): JSX.Element
     refreshPlan,
     refreshDay,
     completeExercise,
+    uncompleteExercise,
     clearError
   };
 

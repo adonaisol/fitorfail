@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Plus, Loader2, AlertCircle } from 'lucide-react';
+import { Dumbbell, Plus, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorkout } from '../contexts/WorkoutContext';
 import { WeeklyPlanView } from '../components/workout';
+import { WorkoutPlanSkeleton } from '../components/common/Skeleton';
 
 export default function HomePage(): JSX.Element {
   const { user } = useAuth();
@@ -15,6 +16,7 @@ export default function HomePage(): JSX.Element {
     refreshPlan,
     refreshDay,
     completeExercise,
+    uncompleteExercise,
     clearError
   } = useWorkout();
 
@@ -22,14 +24,20 @@ export default function HomePage(): JSX.Element {
     fetchCurrentPlan();
   }, [fetchCurrentPlan]);
 
-  // Loading state
+  // Loading state with skeleton
   if (isLoading && !currentPlan) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex flex-col items-center justify-center">
-          <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-          <p className="mt-2 text-gray-600">Loading your workout plan...</p>
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Welcome Section */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Welcome back, {user?.username || 'User'}!
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Fitness Level: <span className="font-medium text-primary-500">{user?.skillLevel || 'Unknown'}</span>
+          </p>
         </div>
+        <WorkoutPlanSkeleton />
       </div>
     );
   }
@@ -69,6 +77,7 @@ export default function HomePage(): JSX.Element {
           onRefreshPlan={refreshPlan}
           onRefreshDay={refreshDay}
           onCompleteExercise={completeExercise}
+          onUncompleteExercise={uncompleteExercise}
           isRefreshing={isLoading}
         />
       ) : (

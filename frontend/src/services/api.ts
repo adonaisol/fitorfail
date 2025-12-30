@@ -92,6 +92,11 @@ export const workoutApi = {
     return response.data;
   },
 
+  uncompleteExercise: async (sessionExerciseId: number): Promise<{ message: string }> => {
+    const response = await api.put<{ message: string }>(`/workouts/exercises/${sessionExerciseId}/uncomplete`);
+    return response.data;
+  },
+
   getHistory: async (limit = 10, offset = 0): Promise<{ plans: WorkoutPlanSummary[]; pagination: { total: number; limit: number; offset: number } }> => {
     const response = await api.get<{ plans: WorkoutPlanSummary[]; pagination: { total: number; limit: number; offset: number } }>(`/workouts/history?limit=${limit}&offset=${offset}`);
     return response.data;
