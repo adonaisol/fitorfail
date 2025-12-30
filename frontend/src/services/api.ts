@@ -9,7 +9,10 @@ import type {
   WorkoutPlanSummary,
   UserProfile,
   PreferencesOptions,
-  ExerciseRating
+  ExerciseRating,
+  UserStats,
+  HistoryPlan,
+  ActivePlanInfo
 } from '../types';
 
 const API_BASE_URL = '/api';
@@ -88,6 +91,11 @@ export const workoutApi = {
     return response.data;
   },
 
+  getActivePlanInfo: async (): Promise<{ activePlan: ActivePlanInfo | null }> => {
+    const response = await api.get<{ activePlan: ActivePlanInfo | null }>('/workouts/active-info');
+    return response.data;
+  },
+
   refreshPlan: async (planId: number): Promise<{ message: string; plan: WorkoutPlan }> => {
     const response = await api.post<{ message: string; plan: WorkoutPlan }>(`/workouts/${planId}/refresh`);
     return response.data;
@@ -161,6 +169,19 @@ export const ratingApi = {
 
   remove: async (exerciseId: number): Promise<{ message: string }> => {
     const response = await api.delete<{ message: string }>(`/exercises/${exerciseId}/rating`);
+    return response.data;
+  }
+};
+
+// Stats API
+export const statsApi = {
+  getStats: async (): Promise<UserStats> => {
+    const response = await api.get<UserStats>('/stats');
+    return response.data;
+  },
+
+  getHistory: async (limit = 10, offset = 0, includeCancelled = false): Promise<{ plans: HistoryPlan[]; pagination: { total: number; limit: number; offset: number } }> => {
+    const response = await api.get<{ plans: HistoryPlan[]; pagination: { total: number; limit: number; offset: number } }>(`/stats/history?limit=${limit}&offset=${offset}&includeCancelled=${includeCancelled}`);
     return response.data;
   }
 };

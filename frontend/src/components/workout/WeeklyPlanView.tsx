@@ -38,13 +38,10 @@ export default function WeeklyPlanView({
   const progressPercent = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
   const isComplete = completedExercises === totalExercises && totalExercises > 0;
 
-  // Calculate incomplete days
-  const incompleteDays = plan.days.filter(day =>
-    day.exercises.some(e => !e.completed)
-  );
+  // Calculate completed days count (for display in dialog)
   const completedDays = plan.days.filter(day =>
     day.exercises.length > 0 && day.exercises.every(e => e.completed)
-  );
+  ).length;
 
   const handleRefreshAllClick = () => {
     if (completedExercises > 0) {
@@ -196,7 +193,7 @@ export default function WeeklyPlanView({
       <ConfirmDialog
         isOpen={showRefreshAllConfirm}
         title="Refresh Week?"
-        message={`You have ${completedExercises} completed exercise${completedExercises === 1 ? '' : 's'} across ${completedDays.length} completed day${completedDays.length === 1 ? '' : 's'}. Choose how to refresh:`}
+        message={`You have ${completedExercises} completed exercise${completedExercises === 1 ? '' : 's'}${completedDays > 0 ? ` across ${completedDays} completed day${completedDays === 1 ? '' : 's'}` : ''}. Choose how to refresh:`}
         cancelLabel="Cancel"
         variant="danger"
         onCancel={() => setShowRefreshAllConfirm(false)}

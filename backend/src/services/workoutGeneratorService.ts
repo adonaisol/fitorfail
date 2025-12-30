@@ -317,6 +317,26 @@ export function generateWorkoutPlan(userId: number, workoutDays?: number): Gener
   weekStart.setDate(today.getDate() + daysToMonday);
   const weekStartDate = weekStart.toISOString().split('T')[0];
 
+  // Delete any existing draft plans for this week (cleanup old unused drafts)
+  const existingDrafts = all<{ id: number }>(
+    `SELECT id FROM workout_plans WHERE user_id = ? AND week_start_date = ? AND status = 'draft'`,
+    [userId, weekStartDate]
+  );
+
+  for (const draft of existingDrafts) {
+    // Delete session exercises first (foreign key constraint)
+    run(
+      `DELETE FROM session_exercises WHERE session_id IN (
+        SELECT id FROM workout_sessions WHERE plan_id = ?
+      )`,
+      [draft.id]
+    );
+    // Delete sessions
+    run('DELETE FROM workout_sessions WHERE plan_id = ?', [draft.id]);
+    // Delete the draft plan
+    run('DELETE FROM workout_plans WHERE id = ?', [draft.id]);
+  }
+
   // Create workout plan
   const planResult = run(
     `INSERT INTO workout_plans (user_id, week_start_date, workout_days, status)
@@ -484,15 +504,49 @@ export function getCurrentPlan(userId: number): GeneratedPlan | null {
 }
 
 /**
- * Activate a draft plan
+ * Get active plan info (used for confirmation before cancelling)
  */
-export function activatePlan(planId: number, userId: number): boolean {
-  // Deactivate any existing active plans
-  run(
-    `UPDATE workout_plans SET status = 'completed'
-     WHERE user_id = ? AND status = 'active'`,
+export function getActivePlanInfo(userId: number): { planId: number; weekStartDate: string; completedExercises: number; totalExercises: number } | null {
+  const activePlan = get<{ id: number; week_start_date: string }>(
+    `SELECT id, week_start_date FROM workout_plans WHERE user_id = ? AND status = 'active'`,
     [userId]
   );
+
+  if (!activePlan) {
+    return null;
+  }
+
+  // Get exercise counts
+  const counts = get<{ completed: number; total: number }>(
+    `SELECT
+      SUM(CASE WHEN se.completed = 1 THEN 1 ELSE 0 END) as completed,
+      COUNT(*) as total
+     FROM session_exercises se
+     JOIN workout_sessions ws ON se.session_id = ws.id
+     WHERE ws.plan_id = ?`,
+    [activePlan.id]
+  );
+
+  return {
+    planId: activePlan.id,
+    weekStartDate: activePlan.week_start_date,
+    completedExercises: counts?.completed || 0,
+    totalExercises: counts?.total || 0
+  };
+}
+
+/**
+ * Activate a draft plan
+ */
+export function activatePlan(planId: number, userId: number, cancelExisting: boolean = true): boolean {
+  if (cancelExisting) {
+    // Cancel any existing active plans (not complete them)
+    run(
+      `UPDATE workout_plans SET status = 'cancelled'
+       WHERE user_id = ? AND status = 'active'`,
+      [userId]
+    );
+  }
 
   // Activate the new plan
   run(
@@ -817,6 +871,7 @@ export default {
   generateWorkoutPlan,
   getWorkoutPlan,
   getCurrentPlan,
+  getActivePlanInfo,
   activatePlan,
   refreshDay,
   completeExercise,

@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Dumbbell, Loader2, Check, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useWorkout } from '../contexts/WorkoutContext';
-import type { WorkoutPlan } from '../types';
+import { workoutApi } from '../services/api';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import type { WorkoutPlan, ActivePlanInfo } from '../types';
 
 type WorkoutDays = 3 | 4 | 5;
 
@@ -33,6 +35,8 @@ export default function GeneratePage(): JSX.Element {
   const [generatedPlan, setGeneratedPlan] = useState<WorkoutPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<'select' | 'preview' | 'activating'>('select');
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [activePlanInfo, setActivePlanInfo] = useState<ActivePlanInfo | null>(null);
 
   const handleGenerate = async () => {
     setError(null);
@@ -45,8 +49,28 @@ export default function GeneratePage(): JSX.Element {
     }
   };
 
-  const handleActivate = async () => {
+  const handleActivateClick = async () => {
     if (!generatedPlan) return;
+
+    // Check if there's an active plan
+    try {
+      const { activePlan } = await workoutApi.getActivePlanInfo();
+      if (activePlan) {
+        setActivePlanInfo(activePlan);
+        setShowCancelConfirm(true);
+        return;
+      }
+    } catch {
+      // If we can't check, proceed anyway
+    }
+
+    // No active plan, proceed directly
+    await doActivate();
+  };
+
+  const doActivate = async () => {
+    if (!generatedPlan) return;
+    setShowCancelConfirm(false);
     setStep('activating');
     setError(null);
     try {
@@ -63,6 +87,11 @@ export default function GeneratePage(): JSX.Element {
   const handleRegenerate = async () => {
     setGeneratedPlan(null);
     setStep('select');
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
@@ -187,7 +216,7 @@ export default function GeneratePage(): JSX.Element {
               Regenerate
             </button>
             <button
-              onClick={handleActivate}
+              onClick={handleActivateClick}
               disabled={isLoading}
               className="btn-primary flex-1 flex items-center justify-center gap-2"
             >
@@ -213,6 +242,26 @@ export default function GeneratePage(): JSX.Element {
           <p className="mt-2 text-gray-600">Activating your workout plan...</p>
         </div>
       )}
+
+      {/* Cancel active plan confirmation dialog */}
+      <ConfirmDialog
+        isOpen={showCancelConfirm}
+        title="Cancel Current Plan?"
+        message={activePlanInfo
+          ? `You have an active plan for the week of ${formatDate(activePlanInfo.weekStartDate)} with ${activePlanInfo.completedExercises}/${activePlanInfo.totalExercises} exercises completed. Activating this new plan will cancel your current plan.`
+          : 'You have an active workout plan. Activating this new plan will cancel your current plan.'
+        }
+        variant="warning"
+        onCancel={() => setShowCancelConfirm(false)}
+        actions={[
+          {
+            label: 'Cancel Current & Activate New',
+            variant: 'warning',
+            onClick: doActivate
+          }
+        ]}
+        cancelLabel="Keep Current Plan"
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   generateWorkoutPlan,
   getWorkoutPlan,
   getCurrentPlan,
+  getActivePlanInfo,
   activatePlan,
   refreshDay,
   completeExercise,
@@ -94,6 +95,20 @@ router.get('/history', (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching workout history:', error);
     res.status(500).json({ error: 'Failed to fetch workout history' });
+  }
+});
+
+// GET /api/workouts/active-info - Get info about current active plan (for confirmation dialog)
+// NOTE: This must be defined BEFORE /:id route to avoid matching "active-info" as an id
+router.get('/active-info', (req: Request, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const activePlan = getActivePlanInfo(userId);
+
+    res.json({ activePlan });
+  } catch (error) {
+    console.error('Error fetching active plan info:', error);
+    res.status(500).json({ error: 'Failed to fetch active plan info' });
   }
 });
 
