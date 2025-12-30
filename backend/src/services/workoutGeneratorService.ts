@@ -777,7 +777,7 @@ export function refreshUncompletedExercises(planId: number, dayNumber: number, u
 }
 
 /**
- * Refresh only incomplete days in a plan (days with at least one uncompleted exercise)
+ * Refresh only incomplete days in a plan (refreshes uncompleted exercises in each day, preserving completed ones)
  */
 export function refreshIncompleteDays(planId: number, userId: number): { refreshedDays: number[]; plan: GeneratedPlan | null } {
   // Verify ownership
@@ -802,7 +802,8 @@ export function refreshIncompleteDays(planId: number, userId: number): { refresh
   const refreshedDays: number[] = [];
 
   for (const day of incompleteDays) {
-    refreshDay(planId, day.day_number, userId);
+    // Use refreshUncompletedExercises to preserve completed exercises within each day
+    refreshUncompletedExercises(planId, day.day_number, userId);
     refreshedDays.push(day.day_number);
   }
 

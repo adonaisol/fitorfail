@@ -87,16 +87,17 @@ export default function WeeklyPlanView({
   const getRefreshDialogActions = () => {
     const actions = [];
 
-    if (incompleteDays.length > 0 && completedDays.length > 0) {
+    // Show partial refresh option if there's progress to preserve
+    if (completedExercises > 0) {
       actions.push({
-        label: `Refresh ${incompleteDays.length} Incomplete Day${incompleteDays.length === 1 ? '' : 's'}`,
+        label: `Keep Completed, Refresh Rest`,
         variant: 'default' as const,
         onClick: handleRefreshIncompleteDays
       });
     }
 
     actions.push({
-      label: 'Refresh All Days',
+      label: 'Refresh All (Reset Progress)',
       variant: 'danger' as const,
       onClick: handleRefreshAll
     });
