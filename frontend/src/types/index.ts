@@ -120,3 +120,50 @@ export interface ExerciseRating {
   rating: number | null;
   notes: string | null;
 }
+
+// Stats types
+export interface UserStats {
+  overview: {
+    totalPlans: number;
+    activePlans: number;
+    completedPlans: number;
+    totalExercisesCompleted: number;
+    totalExercisesAssigned: number;
+    completedThisWeek: number;
+  };
+  streaks: {
+    current: number;
+    longest: number;
+  };
+  topExercises: {
+    exercise_id: number;
+    title: string;
+    times_completed: number;
+  }[];
+  topBodyParts: {
+    body_part: string;
+    times_worked: number;
+  }[];
+  recentActivity: {
+    date: string;
+    exercises_completed: number;
+  }[];
+}
+
+export interface HistoryPlan {
+  id: number;
+  weekStartDate: string;
+  workoutDays: number;
+  status: string;
+  createdAt: string;
+  totalExercises: number;
+  completedExercises: number;
+  completionPercent: number;
+}
+
+export interface ActivePlanInfo {
+  planId: number;
+  weekStartDate: string;
+  completedExercises: number;
+  totalExercises: number;
+}

@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Plus, AlertCircle } from 'lucide-react';
+import { Dumbbell, Plus, AlertCircle, Flame, TrendingUp, Calendar } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorkout } from '../contexts/WorkoutContext';
+import { statsApi } from '../services/api';
 import { WeeklyPlanView } from '../components/workout';
 import { WorkoutPlanSkeleton } from '../components/common/Skeleton';
+import type { UserStats } from '../types';
 
 export default function HomePage(): JSX.Element {
   const { user } = useAuth();
@@ -21,9 +23,12 @@ export default function HomePage(): JSX.Element {
     uncompleteExercise,
     clearError
   } = useWorkout();
+  const [stats, setStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
     fetchCurrentPlan();
+    // Fetch stats for the dashboard
+    statsApi.getStats().then(setStats).catch(() => {});
   }, [fetchCurrentPlan]);
 
   // Loading state with skeleton
@@ -101,23 +106,43 @@ export default function HomePage(): JSX.Element {
             </Link>
           </div>
 
-          {/* Quick Stats Preview (Placeholder) */}
+          {/* Quick Stats Preview */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="card">
-              <div className="text-3xl font-bold text-primary-500">0</div>
-              <div className="text-sm text-gray-600">Workouts This Week</div>
+            <div className="card p-4">
+              <div className="flex items-center gap-2 text-primary-500 mb-1">
+                <Calendar className="w-4 h-4" />
+              </div>
+              <div className="text-2xl font-bold text-primary-500">
+                {stats?.overview.completedThisWeek || 0}
+              </div>
+              <div className="text-sm text-gray-600">This Week</div>
             </div>
-            <div className="card">
-              <div className="text-3xl font-bold text-success-500">0</div>
-              <div className="text-sm text-gray-600">Exercises Completed</div>
+            <div className="card p-4">
+              <div className="flex items-center gap-2 text-green-500 mb-1">
+                <Dumbbell className="w-4 h-4" />
+              </div>
+              <div className="text-2xl font-bold text-green-500">
+                {stats?.overview.totalExercisesCompleted || 0}
+              </div>
+              <div className="text-sm text-gray-600">Exercises Done</div>
             </div>
-            <div className="card">
-              <div className="text-3xl font-bold text-warning-500">0</div>
+            <div className="card p-4">
+              <div className="flex items-center gap-2 text-orange-500 mb-1">
+                <Flame className="w-4 h-4" />
+              </div>
+              <div className="text-2xl font-bold text-orange-500">
+                {stats?.streaks.current || 0}
+              </div>
               <div className="text-sm text-gray-600">Day Streak</div>
             </div>
-            <div className="card">
-              <div className="text-3xl font-bold text-gray-700">0</div>
-              <div className="text-sm text-gray-600">Total Workouts</div>
+            <div className="card p-4">
+              <div className="flex items-center gap-2 text-purple-500 mb-1">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <div className="text-2xl font-bold text-purple-500">
+                {stats?.overview.totalPlans || 0}
+              </div>
+              <div className="text-sm text-gray-600">Total Plans</div>
             </div>
           </div>
         </>

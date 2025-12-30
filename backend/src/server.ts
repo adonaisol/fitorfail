@@ -9,6 +9,7 @@ import authRoutes from './routes/auth';
 import exerciseRoutes from './routes/exercises';
 import workoutRoutes from './routes/workouts';
 import preferencesRoutes from './routes/preferences';
+import statsRoutes from './routes/stats';
 
 // Initialize Express app
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/exercises', exerciseRoutes);
 app.use('/api/workouts', workoutRoutes);
 app.use('/api/preferences', preferencesRoutes);
+app.use('/api/stats', statsRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
