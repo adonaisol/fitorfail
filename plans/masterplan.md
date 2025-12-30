@@ -147,30 +147,56 @@ Full-stack fitness application that automatically generates personalized weekly 
 
 ---
 
-### Phase 6: User Preferences & Ratings 🔲 NOT STARTED
+### Phase 6: User Preferences & Ratings ✅ COMPLETED
 
-**Planned:**
+**Completed:**
 
-- [ ] ProfilePage with user info
-- [ ] PreferencesForm (workout days, equipment, avoided body parts)
-- [ ] Preferences API endpoints (GET/PUT)
-- [ ] RatingInput component (star rating)
-- [ ] Exercise rating API endpoint
-- [ ] Algorithm updates to use preferences
+- [x] ProfilePage with user info and preferences form
+- [x] PreferencesForm (skill level, workout days, equipment, avoided body parts)
+- [x] Preferences API endpoints (GET /api/preferences, PUT /api/preferences, GET /api/preferences/options)
+- [x] RatingInput component (star rating)
+- [x] Exercise rating API endpoints (POST /api/exercises/:id/rate, GET /api/exercises/:id/rating, DELETE /api/exercises/:id/rating)
+- [x] Algorithm already uses preferences from Phase 3
+
+**Files created:**
+
+- `backend/src/routes/preferences.ts` - Preferences API routes
+- `frontend/src/pages/ProfilePage.tsx` - Profile and settings page
+- `frontend/src/components/common/RatingInput.tsx` - Star rating component
+
+**Files updated:**
+
+- `backend/src/server.ts` - Added preferences routes
+- `backend/src/routes/exercises.ts` - Added rating endpoints
+- `frontend/src/App.tsx` - Added profile route
+- `frontend/src/contexts/AuthContext.tsx` - Added updateUser function
+- `frontend/src/services/api.ts` - Added preferencesApi and ratingApi
+- `frontend/src/types/index.ts` - Added UserPreferences, UserProfile, ExerciseRating types
 
 ---
 
-### Phase 7: Partial Refresh Feature 🔲 NOT STARTED
+### Phase 7: Partial Refresh Feature ✅ COMPLETED
 
-**Planned:**
+**Completed:**
 
-- [ ] Refresh only uncompleted exercises within a day
-  - Add "Refresh Uncompleted" option in day refresh confirmation dialog
-  - Backend endpoint to refresh only incomplete exercises in a session
-- [ ] Refresh only incomplete days when refreshing whole week
-  - Add "Refresh Incomplete Days" option in week refresh confirmation dialog
-  - Backend endpoint to refresh only days with incomplete exercises
-- [ ] Update ConfirmDialog to support multiple action buttons
+- [x] Refresh only uncompleted exercises within a day
+  - Added "Refresh X Uncompleted" option in day refresh confirmation dialog
+  - Backend endpoint `POST /api/workouts/:planId/days/:dayNumber/refresh-uncompleted`
+- [x] Refresh only incomplete days when refreshing whole week
+  - Added "Refresh X Incomplete Days" option in week refresh confirmation dialog
+  - Backend endpoint `POST /api/workouts/:id/refresh-incomplete`
+- [x] Updated ConfirmDialog to support multiple action buttons
+
+**Files created/updated:**
+
+- `backend/src/services/workoutGeneratorService.ts` - Added `refreshUncompletedExercises` and `refreshIncompleteDays` functions
+- `backend/src/routes/workouts.ts` - Added new endpoints
+- `frontend/src/components/common/ConfirmDialog.tsx` - Added `actions` prop for multiple buttons
+- `frontend/src/components/workout/DayCard.tsx` - Added partial refresh option
+- `frontend/src/components/workout/WeeklyPlanView.tsx` - Added partial refresh option
+- `frontend/src/contexts/WorkoutContext.tsx` - Added new context functions
+- `frontend/src/services/api.ts` - Added new API methods
+- `frontend/src/pages/HomePage.tsx` - Updated to pass new props
 
 ---
 

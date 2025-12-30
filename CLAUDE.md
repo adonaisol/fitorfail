@@ -76,7 +76,7 @@ fitorfail/
 │   │   │   ├── common/        # ProtectedRoute.tsx, ConfirmDialog.tsx, Skeleton.tsx
 │   │   │   ├── layout/        # Layout.tsx, Header.tsx, BottomNav.tsx
 │   │   │   └── workout/       # WeeklyPlanView.tsx, DayCard.tsx, ExerciseCard.tsx
-│   │   ├── pages/             # HomePage, LoginPage, RegisterPage, GeneratePage
+│   │   ├── pages/             # HomePage, LoginPage, RegisterPage, GeneratePage, ProfilePage
 │   │   ├── contexts/          # AuthContext.tsx, WorkoutContext.tsx
 │   │   ├── services/          # api.ts (axios client with auth interceptor)
 │   │   ├── types/             # index.ts (TypeScript interfaces)
@@ -109,6 +109,18 @@ fitorfail/
 - `PUT /api/workouts/exercises/:sessionExerciseId/complete` - Mark exercise complete
 - `PUT /api/workouts/exercises/:sessionExerciseId/uncomplete` - Undo exercise completion
 - `GET /api/workouts/history` - Get past workout plans
+
+### User Preferences (all require authentication)
+
+- `GET /api/preferences` - Get user profile and preferences
+- `PUT /api/preferences` - Update preferences (workoutDays, preferredEquipment, avoidedBodyParts, skillLevel)
+- `GET /api/preferences/options` - Get available equipment and body part options
+
+### Exercise Ratings (require authentication)
+
+- `POST /api/exercises/:id/rate` - Rate an exercise (body: {rating: 0-5, notes?: string})
+- `GET /api/exercises/:id/rating` - Get user's rating for an exercise
+- `DELETE /api/exercises/:id/rating` - Remove user's rating
 
 ## Database Schema
 
@@ -171,7 +183,7 @@ interface Exercise {
 - [x] **Phase 3: Workout Generation Engine** - Split strategies, exercise scoring, all CRUD endpoints
 - [x] **Phase 4: Weekly Workout View** - WeeklyPlanView, DayCard, ExerciseCard, GeneratePage
 - [x] **Phase 5: Workout Management** - Toast notifications, confirmation dialogs, loading skeletons, undo completion
-- [ ] **Phase 6: User Preferences & Ratings** - Profile page, preferences form, exercise ratings
+- [x] **Phase 6: User Preferences & Ratings** - Profile page, preferences form, exercise ratings
 - [ ] **Phase 7: Partial Refresh Feature** - Refresh only uncompleted exercises/days
 - [ ] **Phase 8: History & Analytics** - Past workouts, statistics
 - [ ] **Phase 9: Polish & Testing** - Error handling, mobile testing, accessibility
@@ -184,6 +196,7 @@ interface Exercise {
 - `src/services/workoutGeneratorService.ts` - Core workout generation algorithm
 - `src/services/authService.ts` - Password hashing, JWT generation
 - `src/routes/workouts.ts` - All workout API endpoints
+- `src/routes/preferences.ts` - User preferences API endpoints
 - `src/config/database.ts` - sql.js database helper functions
 
 **Frontend:**
@@ -192,5 +205,7 @@ interface Exercise {
 - `src/components/workout/WeeklyPlanView.tsx` - Main workout display
 - `src/components/common/ConfirmDialog.tsx` - Reusable confirmation modal
 - `src/components/common/Skeleton.tsx` - Loading skeleton components
+- `src/components/common/RatingInput.tsx` - Star rating component
 - `src/pages/GeneratePage.tsx` - Plan generation wizard
+- `src/pages/ProfilePage.tsx` - User profile and preferences
 - `src/services/api.ts` - Axios client with auth interceptor
