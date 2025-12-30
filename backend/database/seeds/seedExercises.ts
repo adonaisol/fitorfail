@@ -1,4 +1,5 @@
 import { initializeDatabase, closeDatabase, run, get } from '../../src/config/database.js';
+import { hashPassword } from '../../src/services/authService.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -63,6 +64,30 @@ try {
   // Verify count
   const countResult = get<{ count: number }>('SELECT COUNT(*) as count FROM exercises');
   console.log(`Successfully imported ${countResult?.count || 0} exercises!`);
+
+  // Seed development user
+  console.log('\nSeeding development user...');
+  const existingUser = get<{ id: number }>('SELECT id FROM users WHERE username = ?', ['super']);
+
+  if (!existingUser) {
+    const passwordHash = await hashPassword('pass123');
+    run(
+      'INSERT INTO users (username, password_hash, skill_level) VALUES (?, ?, ?)',
+      ['super', passwordHash, 'Intermediate']
+    );
+
+    // Get the user id and create default preferences
+    const user = get<{ id: number }>('SELECT id FROM users WHERE username = ?', ['super']);
+    if (user) {
+      run(
+        'INSERT INTO user_preferences (user_id, workout_days) VALUES (?, ?)',
+        [user.id, 3]
+      );
+    }
+    console.log('Created seed user: super / pass123');
+  } else {
+    console.log('Seed user "super" already exists, skipping...');
+  }
 
 } catch (error) {
   console.error('Failed to seed exercises:', error);
