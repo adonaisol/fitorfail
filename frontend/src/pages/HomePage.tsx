@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Dumbbell, Plus, AlertCircle, Flame, TrendingUp, Calendar } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorkout } from '../contexts/WorkoutContext';
 import { statsApi } from '../services/api';
 import { WeeklyPlanView } from '../components/workout';
-import { WorkoutPlanSkeleton } from '../components/common/Skeleton';
+import { WorkoutPlanSkeleton, StatsGridSkeleton } from '../components/common/Skeleton';
 import type { UserStats } from '../types';
 
 export default function HomePage(): JSX.Element {
@@ -24,12 +24,27 @@ export default function HomePage(): JSX.Element {
     clearError
   } = useWorkout();
   const [stats, setStats] = useState<UserStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  const fetchStats = useCallback(async () => {
+    setIsLoadingStats(true);
+    setStatsError(null);
+    try {
+      const data = await statsApi.getStats();
+      setStats(data);
+    } catch (err) {
+      setStatsError('Failed to load stats');
+      console.error('Failed to fetch stats:', err);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchCurrentPlan();
-    // Fetch stats for the dashboard
-    statsApi.getStats().then(setStats).catch(() => {});
-  }, [fetchCurrentPlan]);
+    fetchStats();
+  }, [fetchCurrentPlan, fetchStats]);
 
   // Loading state with skeleton
   if (isLoading && !currentPlan) {
@@ -107,43 +122,59 @@ export default function HomePage(): JSX.Element {
           </div>
 
           {/* Quick Stats Preview */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="card p-4">
-              <div className="flex items-center gap-2 text-primary-500 mb-1">
-                <Calendar className="w-4 h-4" />
+          <div className="mt-6">
+            {isLoadingStats ? (
+              <StatsGridSkeleton />
+            ) : statsError ? (
+              <div className="card p-4 text-center text-gray-500">
+                <p>{statsError}</p>
+                <button
+                  onClick={fetchStats}
+                  className="text-primary-500 hover:text-primary-600 text-sm mt-2"
+                >
+                  Try again
+                </button>
               </div>
-              <div className="text-2xl font-bold text-primary-500">
-                {stats?.overview.completedThisWeek || 0}
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="card p-4">
+                  <div className="flex items-center gap-2 text-primary-500 mb-1">
+                    <Calendar className="w-4 h-4" aria-hidden="true" />
+                  </div>
+                  <div className="text-2xl font-bold text-primary-500">
+                    {stats?.overview.completedThisWeek || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">This Week</div>
+                </div>
+                <div className="card p-4">
+                  <div className="flex items-center gap-2 text-green-500 mb-1">
+                    <Dumbbell className="w-4 h-4" aria-hidden="true" />
+                  </div>
+                  <div className="text-2xl font-bold text-green-500">
+                    {stats?.overview.totalExercisesCompleted || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Exercises Done</div>
+                </div>
+                <div className="card p-4">
+                  <div className="flex items-center gap-2 text-orange-500 mb-1">
+                    <Flame className="w-4 h-4" aria-hidden="true" />
+                  </div>
+                  <div className="text-2xl font-bold text-orange-500">
+                    {stats?.streaks.current || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Day Streak</div>
+                </div>
+                <div className="card p-4">
+                  <div className="flex items-center gap-2 text-purple-500 mb-1">
+                    <TrendingUp className="w-4 h-4" aria-hidden="true" />
+                  </div>
+                  <div className="text-2xl font-bold text-purple-500">
+                    {stats?.overview.totalPlans || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Total Plans</div>
+                </div>
               </div>
-              <div className="text-sm text-gray-600">This Week</div>
-            </div>
-            <div className="card p-4">
-              <div className="flex items-center gap-2 text-green-500 mb-1">
-                <Dumbbell className="w-4 h-4" />
-              </div>
-              <div className="text-2xl font-bold text-green-500">
-                {stats?.overview.totalExercisesCompleted || 0}
-              </div>
-              <div className="text-sm text-gray-600">Exercises Done</div>
-            </div>
-            <div className="card p-4">
-              <div className="flex items-center gap-2 text-orange-500 mb-1">
-                <Flame className="w-4 h-4" />
-              </div>
-              <div className="text-2xl font-bold text-orange-500">
-                {stats?.streaks.current || 0}
-              </div>
-              <div className="text-sm text-gray-600">Day Streak</div>
-            </div>
-            <div className="card p-4">
-              <div className="flex items-center gap-2 text-purple-500 mb-1">
-                <TrendingUp className="w-4 h-4" />
-              </div>
-              <div className="text-2xl font-bold text-purple-500">
-                {stats?.overview.totalPlans || 0}
-              </div>
-              <div className="text-sm text-gray-600">Total Plans</div>
-            </div>
+            )}
           </div>
         </>
       )}

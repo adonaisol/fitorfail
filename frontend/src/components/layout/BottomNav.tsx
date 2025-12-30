@@ -16,20 +16,29 @@ const navItems: NavItem[] = [
 
 export default function BottomNav(): JSX.Element {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pb-safe z-50">
-      <div className="flex items-center justify-around h-16">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pb-safe z-50"
+      aria-label="Main navigation"
+    >
+      <div className="flex items-center justify-around h-16" role="menubar">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 w-16 h-full transition-colors ${
+              `flex flex-col items-center justify-center gap-1 w-16 h-full transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 ${
                 isActive ? 'text-primary-500' : 'text-gray-500'
               }`
             }
+            role="menuitem"
+            aria-label={label}
           >
-            <Icon className="w-6 h-6" />
-            <span className="text-xs font-medium">{label}</span>
+            {({ isActive }) => (
+              <>
+                <Icon className="w-6 h-6" aria-hidden="true" />
+                <span className="text-xs font-medium" aria-current={isActive ? 'page' : undefined}>{label}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </div>

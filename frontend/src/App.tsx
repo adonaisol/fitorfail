@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { WorkoutProvider } from './contexts/WorkoutContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -13,6 +14,7 @@ import HistoryPage from './pages/HistoryPage';
 
 function App(): JSX.Element {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <Toaster
         position="top-center"
@@ -54,6 +56,7 @@ function App(): JSX.Element {
         </Route>
       </Routes>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

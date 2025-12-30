@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo, useCallback, useMemo } from 'react';
 import { RefreshCw, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { WorkoutDay } from '../../types';
@@ -14,28 +14,36 @@ interface DayCardProps {
   onUncompleteExercise: (sessionExerciseId: number) => Promise<void>;
 }
 
-export default function DayCard({ day, planId, onRefreshDay, onRefreshUncompleted, onCompleteExercise, onUncompleteExercise }: DayCardProps): JSX.Element {
+const DayCard = memo(function DayCard({ day, planId, onRefreshDay, onRefreshUncompleted, onCompleteExercise, onUncompleteExercise }: DayCardProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
 
-  const completedCount = day.exercises.filter(e => e.completed).length;
-  const totalCount = day.exercises.length;
-  const uncompletedCount = totalCount - completedCount;
-  const isComplete = completedCount === totalCount && totalCount > 0;
-  const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
-  const hasCompletedExercises = completedCount > 0;
-  const hasUncompletedExercises = uncompletedCount > 0;
+  // Memoize computed values
+  const { completedCount, totalCount, uncompletedCount, isComplete, progressPercent, hasCompletedExercises, hasUncompletedExercises } = useMemo(() => {
+    const completed = day.exercises.filter(e => e.completed).length;
+    const total = day.exercises.length;
+    const uncompleted = total - completed;
+    return {
+      completedCount: completed,
+      totalCount: total,
+      uncompletedCount: uncompleted,
+      isComplete: completed === total && total > 0,
+      progressPercent: total > 0 ? (completed / total) * 100 : 0,
+      hasCompletedExercises: completed > 0,
+      hasUncompletedExercises: uncompleted > 0
+    };
+  }, [day.exercises]);
 
-  const handleRefreshClick = () => {
+  const handleRefreshClick = useCallback(() => {
     if (hasCompletedExercises) {
       setShowRefreshConfirm(true);
     } else {
       handleRefreshAll();
     }
-  };
+  }, [hasCompletedExercises]);
 
-  const handleRefreshAll = async () => {
+  const handleRefreshAll = useCallback(async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
     setShowRefreshConfirm(false);
@@ -47,9 +55,9 @@ export default function DayCard({ day, planId, onRefreshDay, onRefreshUncomplete
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [isRefreshing, onRefreshDay, planId, day.dayNumber, day.dayName]);
 
-  const handleRefreshUncompleted = async () => {
+  const handleRefreshUncompleted = useCallback(async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
     setShowRefreshConfirm(false);
@@ -61,9 +69,9 @@ export default function DayCard({ day, planId, onRefreshDay, onRefreshUncomplete
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [isRefreshing, onRefreshUncompleted, planId, day.dayNumber, uncompletedCount]);
 
-  const getRefreshDialogActions = () => {
+  const getRefreshDialogActions = useCallback(() => {
     const actions = [];
 
     if (hasUncompletedExercises) {
@@ -81,7 +89,10 @@ export default function DayCard({ day, planId, onRefreshDay, onRefreshUncomplete
     });
 
     return actions;
-  };
+  }, [hasUncompletedExercises, uncompletedCount, handleRefreshUncompleted, handleRefreshAll]);
+
+  const toggleExpanded = useCallback(() => setIsExpanded(prev => !prev), []);
+  const closeRefreshConfirm = useCallback(() => setShowRefreshConfirm(false), []);
 
   return (
     <div className={`card overflow-hidden ${isComplete ? 'ring-2 ring-green-500' : ''}`}>
@@ -95,7 +106,7 @@ export default function DayCard({ day, planId, onRefreshDay, onRefreshUncomplete
                 ? 'bg-green-500 text-white'
                 : 'bg-primary-100 text-primary-700'
             }`}>
-              {isComplete ? <CheckCircle2 className="w-5 h-5" /> : day.dayNumber}
+              {isComplete ? <CheckCircle2 className="w-5 h-5" aria-hidden="true" /> : day.dayNumber}
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">{day.dayName}</h3>
@@ -116,24 +127,33 @@ export default function DayCard({ day, planId, onRefreshDay, onRefreshUncomplete
             <button
               onClick={handleRefreshClick}
               disabled={isRefreshing}
-              className="p-2 text-gray-400 hover:text-primary-500 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Refresh exercises"
+              className="p-2 text-gray-400 hover:text-primary-500 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+              aria-label={`Refresh ${day.dayName} exercises`}
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
             </button>
 
             {/* Expand/collapse */}
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={toggleExpanded}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? `Collapse ${day.dayName}` : `Expand ${day.dayName}`}
             >
-              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {isExpanded ? <ChevronUp className="w-4 h-4" aria-hidden="true" /> : <ChevronDown className="w-4 h-4" aria-hidden="true" />}
             </button>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+          role="progressbar"
+          aria-valuenow={completedCount}
+          aria-valuemin={0}
+          aria-valuemax={totalCount}
+          aria-label={`${day.dayName} progress: ${completedCount} of ${totalCount} exercises completed`}
+        >
           <div
             className={`h-full transition-all duration-300 ${
               isComplete ? 'bg-green-500' : 'bg-primary-500'
@@ -164,9 +184,11 @@ export default function DayCard({ day, planId, onRefreshDay, onRefreshUncomplete
         message={`You have ${completedCount} completed exercise${completedCount === 1 ? '' : 's'} in this day. Choose how to refresh:`}
         cancelLabel="Cancel"
         variant="warning"
-        onCancel={() => setShowRefreshConfirm(false)}
+        onCancel={closeRefreshConfirm}
         actions={getRefreshDialogActions()}
       />
     </div>
   );
-}
+});
+
+export default DayCard;

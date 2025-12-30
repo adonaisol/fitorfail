@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo, useCallback } from 'react';
 import { Check, ChevronDown, ChevronUp, Dumbbell, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { SessionExercise } from '../../types';
@@ -11,7 +11,7 @@ interface ExerciseCardProps {
   onUncomplete: (sessionExerciseId: number) => Promise<void>;
 }
 
-export default function ExerciseCard({ exercise, onComplete, onUncomplete }: ExerciseCardProps): JSX.Element {
+const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomplete }: ExerciseCardProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isUncompleting, setIsUncompleting] = useState(false);
@@ -39,7 +39,7 @@ export default function ExerciseCard({ exercise, onComplete, onUncomplete }: Exe
     }
   };
 
-  const handleRatingChange = async (newRating: number) => {
+  const handleRatingChange = useCallback(async (newRating: number) => {
     const previousRating = userRating;
     setUserRating(newRating);
 
@@ -55,9 +55,9 @@ export default function ExerciseCard({ exercise, onComplete, onUncomplete }: Exe
       setUserRating(previousRating);
       toast.error('Failed to save rating');
     }
-  };
+  }, [userRating, exercise.exerciseId]);
 
-  const handleComplete = async () => {
+  const handleComplete = useCallback(async () => {
     if (exercise.completed || isCompleting) return;
     setIsCompleting(true);
     try {
@@ -68,9 +68,9 @@ export default function ExerciseCard({ exercise, onComplete, onUncomplete }: Exe
     } finally {
       setIsCompleting(false);
     }
-  };
+  }, [exercise.completed, exercise.sessionExerciseId, exercise.title, isCompleting, onComplete]);
 
-  const handleUncomplete = async () => {
+  const handleUncomplete = useCallback(async () => {
     if (!exercise.completed || isUncompleting) return;
     setIsUncompleting(true);
     try {
@@ -81,7 +81,9 @@ export default function ExerciseCard({ exercise, onComplete, onUncomplete }: Exe
     } finally {
       setIsUncompleting(false);
     }
-  };
+  }, [exercise.completed, exercise.sessionExerciseId, isUncompleting, onUncomplete]);
+
+  const toggleExpanded = useCallback(() => setIsExpanded(prev => !prev), []);
 
   return (
     <div className={`border rounded-lg overflow-hidden transition-all ${
@@ -93,12 +95,13 @@ export default function ExerciseCard({ exercise, onComplete, onUncomplete }: Exe
         <button
           onClick={exercise.completed ? handleUncomplete : handleComplete}
           disabled={isCompleting || isUncompleting}
-          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             exercise.completed
-              ? 'bg-green-500 text-white hover:bg-green-600'
-              : 'border-2 border-gray-300 hover:border-primary-500 hover:bg-primary-50'
+              ? 'bg-green-500 text-white hover:bg-green-600 focus:ring-green-500'
+              : 'border-2 border-gray-300 hover:border-primary-500 hover:bg-primary-50 focus:ring-primary-500'
           }`}
-          title={exercise.completed ? 'Undo completion' : 'Mark complete'}
+          aria-label={exercise.completed ? `Mark ${exercise.title} as incomplete` : `Mark ${exercise.title} as complete`}
+          aria-pressed={exercise.completed}
         >
           {exercise.completed ? (
             isUncompleting ? (
@@ -133,10 +136,12 @@ export default function ExerciseCard({ exercise, onComplete, onUncomplete }: Exe
 
         {/* Expand button */}
         <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 text-gray-400 hover:text-gray-600"
+          onClick={toggleExpanded}
+          className="p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+          aria-expanded={isExpanded}
+          aria-label={isExpanded ? `Collapse ${exercise.title} details` : `Expand ${exercise.title} details`}
         >
-          {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {isExpanded ? <ChevronUp className="w-5 h-5" aria-hidden="true" /> : <ChevronDown className="w-5 h-5" aria-hidden="true" />}
         </button>
       </div>
 
@@ -203,4 +208,6 @@ export default function ExerciseCard({ exercise, onComplete, onUncomplete }: Exe
       )}
     </div>
   );
-}
+});
+
+export default ExerciseCard;

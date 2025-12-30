@@ -89,4 +89,27 @@ export function ExerciseCardSkeleton(): JSX.Element {
   );
 }
 
+export function StatsCardSkeleton(): JSX.Element {
+  return (
+    <div className="card p-4">
+      <div className="flex items-center gap-2 mb-1">
+        <Skeleton className="w-4 h-4 rounded" />
+      </div>
+      <Skeleton className="h-8 w-12 mb-1" />
+      <Skeleton className="h-4 w-20" />
+    </div>
+  );
+}
+
+export function StatsGridSkeleton(): JSX.Element {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <StatsCardSkeleton />
+      <StatsCardSkeleton />
+      <StatsCardSkeleton />
+      <StatsCardSkeleton />
+    </div>
+  );
+}
+
 export default Skeleton;
