@@ -200,14 +200,34 @@ Full-stack fitness application that automatically generates personalized weekly 
 
 ---
 
-### Phase 8: History & Analytics 🔲 NOT STARTED
+### Phase 8: History & Analytics ✅ COMPLETED
 
-**Planned:**
+**Completed:**
 
-- [ ] HistoryPage showing past workout plans
-- [ ] Statistics cards (workouts completed, exercises done, streaks)
-- [ ] Exercise frequency tracking
-- [ ] Personal records tracking
+- [x] HistoryPage showing past workout plans with completion stats
+- [x] Statistics cards (workouts completed, exercises done, streaks)
+- [x] Exercise frequency tracking (top exercises, most worked body parts)
+- [x] Streak tracking (current and longest)
+- [x] Recent activity tracking
+- [x] HomePage stats preview
+
+**API Endpoints:**
+
+- `GET /api/stats` - Get comprehensive user statistics
+- `GET /api/stats/history` - Get detailed workout history with completion percentages
+
+**Files created:**
+
+- `backend/src/routes/stats.ts` - Stats API routes
+- `frontend/src/pages/HistoryPage.tsx` - History and stats page
+
+**Files updated:**
+
+- `backend/src/server.ts` - Added stats routes
+- `frontend/src/types/index.ts` - Added UserStats, HistoryPlan types
+- `frontend/src/services/api.ts` - Added statsApi
+- `frontend/src/App.tsx` - Added /history route
+- `frontend/src/pages/HomePage.tsx` - Added real stats to dashboard
 
 ---
 
