@@ -73,7 +73,7 @@ fitorfail/
 │   ├── vite.config.js         # Vite config with API proxy
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── common/        # ProtectedRoute.tsx
+│   │   │   ├── common/        # ProtectedRoute.tsx, ConfirmDialog.tsx, Skeleton.tsx
 │   │   │   ├── layout/        # Layout.tsx, Header.tsx, BottomNav.tsx
 │   │   │   └── workout/       # WeeklyPlanView.tsx, DayCard.tsx, ExerciseCard.tsx
 │   │   ├── pages/             # HomePage, LoginPage, RegisterPage, GeneratePage
@@ -107,6 +107,7 @@ fitorfail/
 - `POST /api/workouts/:planId/days/:dayNumber/refresh` - Regenerate single day
 - `GET /api/workouts/sessions/:id` - Get session with exercises
 - `PUT /api/workouts/exercises/:sessionExerciseId/complete` - Mark exercise complete
+- `PUT /api/workouts/exercises/:sessionExerciseId/uncomplete` - Undo exercise completion
 - `GET /api/workouts/history` - Get past workout plans
 
 ## Database Schema
@@ -169,21 +170,27 @@ interface Exercise {
 - [x] **Phase 2: Authentication System** - JWT auth, login/register, protected routes
 - [x] **Phase 3: Workout Generation Engine** - Split strategies, exercise scoring, all CRUD endpoints
 - [x] **Phase 4: Weekly Workout View** - WeeklyPlanView, DayCard, ExerciseCard, GeneratePage
-- [ ] **Phase 5: Workout Management** - Polish completion flow, notifications
+- [x] **Phase 5: Workout Management** - Toast notifications, confirmation dialogs, loading skeletons, undo completion
 - [ ] **Phase 6: User Preferences & Ratings** - Profile page, preferences form, exercise ratings
-- [ ] **Phase 7: History & Analytics** - Past workouts, statistics
-- [ ] **Phase 8: Polish & Testing** - Error handling, loading states, mobile testing
+- [ ] **Phase 7: Partial Refresh Feature** - Refresh only uncompleted exercises/days
+- [ ] **Phase 8: History & Analytics** - Past workouts, statistics
+- [ ] **Phase 9: Polish & Testing** - Error handling, mobile testing, accessibility
+- [ ] **Phase 10: Time-based Constraints** - Prevent modifying past days, completing future days (Post-MVP)
 
 ## Key Files
 
 **Backend:**
+
 - `src/services/workoutGeneratorService.ts` - Core workout generation algorithm
 - `src/services/authService.ts` - Password hashing, JWT generation
 - `src/routes/workouts.ts` - All workout API endpoints
 - `src/config/database.ts` - sql.js database helper functions
 
 **Frontend:**
+
 - `src/contexts/WorkoutContext.tsx` - Workout state management
 - `src/components/workout/WeeklyPlanView.tsx` - Main workout display
+- `src/components/common/ConfirmDialog.tsx` - Reusable confirmation modal
+- `src/components/common/Skeleton.tsx` - Loading skeleton components
 - `src/pages/GeneratePage.tsx` - Plan generation wizard
 - `src/services/api.ts` - Axios client with auth interceptor

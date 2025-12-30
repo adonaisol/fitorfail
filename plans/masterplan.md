@@ -121,18 +121,36 @@ Full-stack fitness application that automatically generates personalized weekly 
 
 ---
 
-### Phase 5: Workout Management 🔲 NOT STARTED
-**Planned:**
-- [ ] Toast notifications for actions (exercise complete, day refreshed)
-- [ ] Confirmation dialogs for destructive actions
-- [ ] Better loading states and skeletons
-- [ ] Undo exercise completion
-- [ ] Session-level progress tracking
+### Phase 5: Workout Management ✅ COMPLETED
+**Completed:**
+- [x] Toast notifications for actions (exercise complete, day refreshed, plan activated)
+- [x] Confirmation dialogs for destructive actions (refresh day, refresh all)
+- [x] Loading skeletons for workout plan
+- [x] Undo exercise completion (click completed exercise to undo)
+- [x] Toaster component setup with custom styling
+
+**Files created:**
+- `frontend/src/components/common/ConfirmDialog.tsx`
+- `frontend/src/components/common/Skeleton.tsx`
+
+**Files updated:**
+- `frontend/src/App.tsx` - Added Toaster component
+- `frontend/src/pages/HomePage.tsx` - Loading skeleton, uncomplete support
+- `frontend/src/pages/GeneratePage.tsx` - Toast notifications
+- `frontend/src/components/workout/WeeklyPlanView.tsx` - Confirmation dialog, toasts, uncomplete
+- `frontend/src/components/workout/DayCard.tsx` - Confirmation dialog, toasts, uncomplete
+- `frontend/src/components/workout/ExerciseCard.tsx` - Undo completion, toasts
+- `frontend/src/contexts/WorkoutContext.tsx` - uncompleteExercise function
+- `frontend/src/services/api.ts` - uncompleteExercise API method
+- `backend/src/services/workoutGeneratorService.ts` - uncompleteExercise function
+- `backend/src/routes/workouts.ts` - PUT /exercises/:id/uncomplete endpoint
 
 ---
 
 ### Phase 6: User Preferences & Ratings 🔲 NOT STARTED
+
 **Planned:**
+
 - [ ] ProfilePage with user info
 - [ ] PreferencesForm (workout days, equipment, avoided body parts)
 - [ ] Preferences API endpoints (GET/PUT)
@@ -142,8 +160,24 @@ Full-stack fitness application that automatically generates personalized weekly 
 
 ---
 
-### Phase 7: History & Analytics 🔲 NOT STARTED
+### Phase 7: Partial Refresh Feature 🔲 NOT STARTED
+
 **Planned:**
+
+- [ ] Refresh only uncompleted exercises within a day
+  - Add "Refresh Uncompleted" option in day refresh confirmation dialog
+  - Backend endpoint to refresh only incomplete exercises in a session
+- [ ] Refresh only incomplete days when refreshing whole week
+  - Add "Refresh Incomplete Days" option in week refresh confirmation dialog
+  - Backend endpoint to refresh only days with incomplete exercises
+- [ ] Update ConfirmDialog to support multiple action buttons
+
+---
+
+### Phase 8: History & Analytics 🔲 NOT STARTED
+
+**Planned:**
+
 - [ ] HistoryPage showing past workout plans
 - [ ] Statistics cards (workouts completed, exercises done, streaks)
 - [ ] Exercise frequency tracking
@@ -151,14 +185,33 @@ Full-stack fitness application that automatically generates personalized weekly 
 
 ---
 
-### Phase 8: Polish & Testing 🔲 NOT STARTED
+### Phase 9: Polish & Testing 🔲 NOT STARTED
+
 **Planned:**
+
 - [ ] Comprehensive error handling
-- [ ] Loading skeletons
 - [ ] Mobile device testing
 - [ ] Accessibility improvements
 - [ ] Performance optimization
 - [ ] README documentation
+
+---
+
+### Phase 10: Time-based Constraints 🔲 NOT STARTED (Post-MVP)
+
+**Planned:**
+
+- [ ] Define day scheduling system (which days user will exercise)
+- [ ] Prevent refreshing/modifying exercises for past days
+- [ ] Prevent completing exercises for future days
+- [ ] Visual indicators for past/current/future days
+- [ ] Graceful handling when user misses a day
+
+**Design Considerations:**
+
+- Need to determine how to identify past/future days without restricting user flexibility
+- Options: calendar-based, sequential completion, or user-defined schedule
+- Consider timezone handling for day boundaries
 
 ---
 
