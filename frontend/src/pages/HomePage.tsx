@@ -50,7 +50,7 @@ export default function HomePage(): JSX.Element {
   // Loading state with skeleton
   if (isLoading && !currentPlan) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
         {/* Welcome Section */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
@@ -66,7 +66,7 @@ export default function HomePage(): JSX.Element {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
       {/* Welcome Section */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">

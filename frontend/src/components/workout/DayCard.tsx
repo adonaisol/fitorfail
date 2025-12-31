@@ -166,7 +166,7 @@ const DayCard = memo(function DayCard({ day, planId, onRefreshDay, onRefreshUnco
 
       {/* Exercises */}
       {isExpanded && (
-        <div className="p-4 space-y-2">
+        <div className="p-2 sm:p-4 space-y-2">
           {day.exercises.map((exercise) => (
             <ExerciseCard
               key={exercise.sessionExerciseId}

@@ -105,12 +105,12 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomp
       exercise.completed ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'
     }`}>
       {/* Header */}
-      <div className="p-3 flex items-center gap-3">
+      <div className="p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
         {/* Complete/Undo button */}
         <button
           onClick={exercise.completed ? handleUncomplete : handleComplete}
           disabled={isCompleting || isUncompleting}
-          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+          className={`w-8 min-w-[32px] max-w-[32px] h-8 min-h-[32px] max-h-[32px] sm:w-10 sm:min-w-[40px] sm:max-w-[40px] sm:h-10 sm:min-h-[40px] sm:max-h-[40px] rounded-full flex items-center justify-center flex-shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             exercise.completed
               ? 'bg-green-500 text-white hover:bg-green-600 focus:ring-green-500'
               : 'border-2 border-gray-300 hover:border-primary-500 hover:bg-primary-50 focus:ring-primary-500'
@@ -120,19 +120,19 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomp
         >
           {exercise.completed ? (
             isUncompleting ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Check className="w-5 h-5" />
+              <Check className="w-4 h-4 sm:w-5 sm:h-5" />
             )
           ) : isCompleting ? (
-            <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
           ) : null}
         </button>
 
         {/* Exercise info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <h4 className={`font-medium text-sm truncate ${
+          <div className="flex items-center gap-1">
+            <h4 className={`font-medium text-sm leading-tight ${
               exercise.completed ? 'text-green-700' : 'text-gray-900'
             }`}>
               {exercise.title}
@@ -141,7 +141,7 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomp
               <button
                 onClick={handleReplace}
                 disabled={isReplacing}
-                className="p-1 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 flex-shrink-0"
+                className="p-0.5 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 flex-shrink-0"
                 aria-label={`Replace ${exercise.title} with another exercise`}
                 title="Replace"
               >
@@ -153,7 +153,7 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomp
               </button>
             )}
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+          <div className="flex flex-wrap items-center gap-x-1 sm:gap-x-2 gap-y-0.5 text-xs text-gray-500 mt-0.5">
             <span>{exercise.sets} sets</span>
             <span className="text-gray-300">|</span>
             <span>{exercise.reps} reps</span>
@@ -169,17 +169,17 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomp
         {/* Expand button */}
         <button
           onClick={toggleExpanded}
-          className="p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+          className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
           aria-expanded={isExpanded}
           aria-label={isExpanded ? `Collapse ${exercise.title} details` : `Expand ${exercise.title} details`}
         >
-          {isExpanded ? <ChevronUp className="w-5 h-5" aria-hidden="true" /> : <ChevronDown className="w-5 h-5" aria-hidden="true" />}
+          {isExpanded ? <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" /> : <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />}
         </button>
       </div>
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="px-3 pb-3 pt-0 border-t border-gray-100">
+        <div className="px-2 sm:px-3 pb-2 sm:pb-3 pt-0 border-t border-gray-100">
           <div className="mt-2 space-y-2">
             {/* Tags */}
             <div className="flex flex-wrap gap-1">

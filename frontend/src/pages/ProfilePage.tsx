@@ -149,7 +149,7 @@ export default function ProfilePage(): JSX.Element {
                 <button
                   key={level}
                   onClick={() => setSkillLevel(level)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors text-center ${
                     skillLevel === level
                       ? 'bg-primary-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
