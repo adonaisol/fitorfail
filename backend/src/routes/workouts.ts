@@ -10,7 +10,8 @@ import {
   completeExercise,
   uncompleteExercise,
   refreshUncompletedExercises,
-  refreshIncompleteDays
+  refreshIncompleteDays,
+  replaceSingleExercise
 } from '../services/workoutGeneratorService.js';
 import { all, get } from '../config/database.js';
 
@@ -421,6 +422,34 @@ router.put('/exercises/:sessionExerciseId/uncomplete', (req: Request, res: Respo
   } catch (error) {
     console.error('Error uncompleting exercise:', error);
     res.status(500).json({ error: 'Failed to undo exercise completion' });
+  }
+});
+
+// POST /api/workouts/exercises/:sessionExerciseId/replace - Replace single exercise
+router.post('/exercises/:sessionExerciseId/replace', (req: Request, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const sessionExerciseId = parseInt(req.params.sessionExerciseId);
+
+    if (isNaN(sessionExerciseId)) {
+      res.status(400).json({ error: 'Invalid exercise ID' });
+      return;
+    }
+
+    const result = replaceSingleExercise(sessionExerciseId, userId);
+
+    if (!result.success) {
+      res.status(404).json({ error: 'Exercise not found or no replacement available' });
+      return;
+    }
+
+    res.json({
+      message: 'Exercise replaced successfully',
+      exercise: result.exercise
+    });
+  } catch (error) {
+    console.error('Error replacing exercise:', error);
+    res.status(500).json({ error: 'Failed to replace exercise' });
   }
 });
 

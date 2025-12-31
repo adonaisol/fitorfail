@@ -867,6 +867,123 @@ export function refreshIncompleteDays(planId: number, userId: number): { refresh
   };
 }
 
+/**
+ * Replace a single exercise with another one
+ * Finds a replacement that:
+ * - Has the same body part
+ * - Is not already in the current plan
+ * - Is scored using the existing algorithm
+ */
+export function replaceSingleExercise(
+  sessionExerciseId: number,
+  userId: number
+): { success: boolean; exercise?: Exercise & { sessionExerciseId: number; sets: number; reps: string; completed: boolean } } {
+  // Verify ownership and get current exercise info
+  const sessionExercise = get<{
+    id: number;
+    exercise_id: number;
+    session_id: number;
+    order_index: number;
+    sets: number;
+    reps: string;
+  }>(
+    `SELECT se.id, se.exercise_id, se.session_id, se.order_index, se.sets, se.reps
+     FROM session_exercises se
+     JOIN workout_sessions ws ON se.session_id = ws.id
+     JOIN workout_plans wp ON ws.plan_id = wp.id
+     WHERE se.id = ? AND wp.user_id = ?`,
+    [sessionExerciseId, userId]
+  );
+
+  if (!sessionExercise) {
+    return { success: false };
+  }
+
+  // Get the current exercise details
+  const currentExercise = get<Exercise>(
+    'SELECT id, title, description, type, body_part, equipment, level, rating FROM exercises WHERE id = ?',
+    [sessionExercise.exercise_id]
+  );
+
+  if (!currentExercise) {
+    return { success: false };
+  }
+
+  // Get plan ID for checking other exercises
+  const session = get<{ plan_id: number }>(
+    'SELECT plan_id FROM workout_sessions WHERE id = ?',
+    [sessionExercise.session_id]
+  );
+
+  if (!session) {
+    return { success: false };
+  }
+
+  // Get all exercises currently in the plan (to exclude them)
+  const usedExercises = all<{ exercise_id: number }>(
+    `SELECT se.exercise_id FROM session_exercises se
+     JOIN workout_sessions ws ON se.session_id = ws.id
+     WHERE ws.plan_id = ?`,
+    [session.plan_id]
+  );
+  const usedExerciseIds = new Set(usedExercises.map(e => e.exercise_id));
+
+  // Load user context for scoring
+  const context = loadUserContext(userId);
+
+  // Find candidate exercises with the same body part
+  const candidates = all<Exercise>(
+    `SELECT id, title, description, type, body_part, equipment, level, rating
+     FROM exercises
+     WHERE body_part = ?
+     AND type IN ('Strength', 'Powerlifting', 'Olympic Weightlifting', 'Plyometrics')
+     AND id != ?`,
+    [currentExercise.body_part, currentExercise.id]
+  );
+
+  // Score and filter candidates
+  const scored: ScoredExercise[] = candidates
+    .filter(e => !usedExerciseIds.has(e.id))
+    .map(exercise => ({
+      ...exercise,
+      score: scoreExercise(exercise, context)
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  if (scored.length === 0) {
+    return { success: false };
+  }
+
+  // Select the best replacement
+  const replacement = scored[0];
+
+  // Update the session exercise with the new exercise
+  run(
+    `UPDATE session_exercises SET exercise_id = ?, completed = 0, completed_at = NULL
+     WHERE id = ?`,
+    [replacement.id, sessionExerciseId]
+  );
+
+  // Return the new exercise details
+  return {
+    success: true,
+    exercise: {
+      id: replacement.id,
+      title: replacement.title,
+      description: replacement.description,
+      type: replacement.type,
+      body_part: replacement.body_part,
+      equipment: replacement.equipment,
+      level: replacement.level,
+      rating: replacement.rating,
+      sessionExerciseId: sessionExercise.id,
+      sets: sessionExercise.sets,
+      reps: sessionExercise.reps,
+      completed: false
+    }
+  };
+}
+
 export default {
   generateWorkoutPlan,
   getWorkoutPlan,
@@ -877,5 +994,6 @@ export default {
   completeExercise,
   uncompleteExercise,
   refreshUncompletedExercises,
-  refreshIncompleteDays
+  refreshIncompleteDays,
+  replaceSingleExercise
 };

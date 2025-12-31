@@ -12,9 +12,10 @@ interface DayCardProps {
   onRefreshUncompleted: (planId: number, dayNumber: number) => Promise<WorkoutDay | void>;
   onCompleteExercise: (sessionExerciseId: number) => Promise<void>;
   onUncompleteExercise: (sessionExerciseId: number) => Promise<void>;
+  onReplaceExercise: (sessionExerciseId: number) => Promise<void>;
 }
 
-const DayCard = memo(function DayCard({ day, planId, onRefreshDay, onRefreshUncompleted, onCompleteExercise, onUncompleteExercise }: DayCardProps): JSX.Element {
+const DayCard = memo(function DayCard({ day, planId, onRefreshDay, onRefreshUncompleted, onCompleteExercise, onUncompleteExercise, onReplaceExercise }: DayCardProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
@@ -172,6 +173,7 @@ const DayCard = memo(function DayCard({ day, planId, onRefreshDay, onRefreshUnco
               exercise={exercise}
               onComplete={onCompleteExercise}
               onUncomplete={onUncompleteExercise}
+              onReplace={onReplaceExercise}
             />
           ))}
         </div>

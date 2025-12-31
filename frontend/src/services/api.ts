@@ -12,7 +12,8 @@ import type {
   ExerciseRating,
   UserStats,
   HistoryPlan,
-  ActivePlanInfo
+  ActivePlanInfo,
+  SessionExercise
 } from '../types';
 
 const API_BASE_URL = '/api';
@@ -123,6 +124,11 @@ export const workoutApi = {
 
   uncompleteExercise: async (sessionExerciseId: number): Promise<{ message: string }> => {
     const response = await api.put<{ message: string }>(`/workouts/exercises/${sessionExerciseId}/uncomplete`);
+    return response.data;
+  },
+
+  replaceExercise: async (sessionExerciseId: number): Promise<{ message: string; exercise: SessionExercise }> => {
+    const response = await api.post<{ message: string; exercise: SessionExercise }>(`/workouts/exercises/${sessionExerciseId}/replace`);
     return response.data;
   },
 

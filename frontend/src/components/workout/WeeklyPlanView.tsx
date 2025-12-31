@@ -13,6 +13,7 @@ interface WeeklyPlanViewProps {
   onRefreshUncompleted: (planId: number, dayNumber: number) => Promise<WorkoutDay | void>;
   onCompleteExercise: (sessionExerciseId: number) => Promise<void>;
   onUncompleteExercise: (sessionExerciseId: number) => Promise<void>;
+  onReplaceExercise: (sessionExerciseId: number) => Promise<void>;
   isRefreshing?: boolean;
 }
 
@@ -24,6 +25,7 @@ export default function WeeklyPlanView({
   onRefreshUncompleted,
   onCompleteExercise,
   onUncompleteExercise,
+  onReplaceExercise,
   isRefreshing = false
 }: WeeklyPlanViewProps): JSX.Element {
   const [showRefreshAllConfirm, setShowRefreshAllConfirm] = useState(false);
@@ -185,6 +187,7 @@ export default function WeeklyPlanView({
             onRefreshUncompleted={onRefreshUncompleted}
             onCompleteExercise={onCompleteExercise}
             onUncompleteExercise={onUncompleteExercise}
+            onReplaceExercise={onReplaceExercise}
           />
         ))}
       </div>

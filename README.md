@@ -10,6 +10,7 @@ A full-stack fitness application that automatically generates personalized weekl
 - **Progress Tracking**: Mark exercises as complete and track your workout history
 - **Exercise Ratings**: Rate exercises to personalize future workout recommendations
 - **Streak Tracking**: Monitor your workout consistency with daily streaks
+- **Replace Single Exercise**: Swap out any individual exercise with a smart replacement targeting the same body part
 - **Partial Refresh**: Refresh only uncompleted exercises while preserving your progress
 
 ## Tech Stack
@@ -124,6 +125,7 @@ fitorfail/
 - `POST /api/workouts/:planId/days/:dayNumber/refresh-uncompleted` - Refresh only uncompleted
 - `PUT /api/workouts/exercises/:id/complete` - Mark complete
 - `PUT /api/workouts/exercises/:id/uncomplete` - Undo completion
+- `POST /api/workouts/exercises/:id/replace` - Replace single exercise
 
 ### Preferences
 - `GET /api/preferences` - Get user preferences

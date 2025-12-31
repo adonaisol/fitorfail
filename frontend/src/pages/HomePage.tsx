@@ -21,6 +21,7 @@ export default function HomePage(): JSX.Element {
     refreshUncompletedExercises,
     completeExercise,
     uncompleteExercise,
+    replaceExercise,
     clearError
   } = useWorkout();
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -102,6 +103,7 @@ export default function HomePage(): JSX.Element {
           onRefreshUncompleted={refreshUncompletedExercises}
           onCompleteExercise={completeExercise}
           onUncompleteExercise={uncompleteExercise}
+          onReplaceExercise={replaceExercise}
           isRefreshing={isLoading}
         />
       ) : (

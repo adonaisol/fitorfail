@@ -13,7 +13,8 @@ import {
   ChevronRight,
   Calendar,
   Sparkles,
-  Target
+  Target,
+  ArrowLeftRight
 } from 'lucide-react';
 
 interface HelpSectionProps {
@@ -126,6 +127,17 @@ export default function HelpPage(): JSX.Element {
         >
           <p>Don't like an exercise? You have several refresh options:</p>
           <div className="mt-2 space-y-3">
+            <div className="border-l-2 border-primary-300 pl-3">
+              <p className="font-medium text-gray-700 flex items-center gap-1.5">
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                Replace Single Exercise
+              </p>
+              <p className="text-gray-500">
+                Click the swap icon (<ArrowLeftRight className="w-3 h-3 inline" />) next to any
+                uncompleted exercise to replace just that one. The replacement will target the
+                same body part and won't duplicate exercises already in your plan.
+              </p>
+            </div>
             <div className="border-l-2 border-blue-300 pl-3">
               <p className="font-medium text-gray-700">Refresh Uncompleted</p>
               <p className="text-gray-500">
@@ -275,7 +287,8 @@ export default function HelpPage(): JSX.Element {
           </h3>
           <ul className="text-sm space-y-2 text-primary-100">
             <li>• Rate exercises as you complete them to improve future recommendations</li>
-            <li>• Use "Refresh Uncompleted" to swap out exercises you can't do</li>
+            <li>• Use the replace icon to swap a single exercise you don't like or can't do</li>
+            <li>• Use "Refresh Uncompleted" to swap out multiple exercises at once</li>
             <li>• Check your streak daily to maintain motivation</li>
             <li>• Update your preferences as you progress to more challenging exercises</li>
           </ul>

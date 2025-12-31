@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useCallback } from 'react';
-import { Check, ChevronDown, ChevronUp, Dumbbell, Star } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Dumbbell, Star, ArrowLeftRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { SessionExercise } from '../../types';
 import { ratingApi } from '../../services/api';
@@ -9,12 +9,14 @@ interface ExerciseCardProps {
   exercise: SessionExercise;
   onComplete: (sessionExerciseId: number) => Promise<void>;
   onUncomplete: (sessionExerciseId: number) => Promise<void>;
+  onReplace: (sessionExerciseId: number) => Promise<void>;
 }
 
-const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomplete }: ExerciseCardProps): JSX.Element {
+const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomplete, onReplace }: ExerciseCardProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isUncompleting, setIsUncompleting] = useState(false);
+  const [isReplacing, setIsReplacing] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
   const [isLoadingRating, setIsLoadingRating] = useState(false);
   const [hasFetchedRating, setHasFetchedRating] = useState(false);
@@ -83,6 +85,19 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomp
     }
   }, [exercise.completed, exercise.sessionExerciseId, isUncompleting, onUncomplete]);
 
+  const handleReplace = useCallback(async () => {
+    if (isReplacing) return;
+    setIsReplacing(true);
+    try {
+      await onReplace(exercise.sessionExerciseId);
+      toast.success('Exercise replaced!');
+    } catch {
+      toast.error('Failed to replace exercise');
+    } finally {
+      setIsReplacing(false);
+    }
+  }, [exercise.sessionExerciseId, isReplacing, onReplace]);
+
   const toggleExpanded = useCallback(() => setIsExpanded(prev => !prev), []);
 
   return (
@@ -116,11 +131,28 @@ const ExerciseCard = memo(function ExerciseCard({ exercise, onComplete, onUncomp
 
         {/* Exercise info */}
         <div className="flex-1 min-w-0">
-          <h4 className={`font-medium text-sm truncate ${
-            exercise.completed ? 'text-green-700' : 'text-gray-900'
-          }`}>
-            {exercise.title}
-          </h4>
+          <div className="flex items-center gap-1.5">
+            <h4 className={`font-medium text-sm truncate ${
+              exercise.completed ? 'text-green-700' : 'text-gray-900'
+            }`}>
+              {exercise.title}
+            </h4>
+            {!exercise.completed && (
+              <button
+                onClick={handleReplace}
+                disabled={isReplacing}
+                className="p-1 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 flex-shrink-0"
+                aria-label={`Replace ${exercise.title} with another exercise`}
+                title="Replace"
+              >
+                {isReplacing ? (
+                  <div className="w-3.5 h-3.5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <ArrowLeftRight className="w-3.5 h-3.5" aria-hidden="true" />
+                )}
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
             <span>{exercise.sets} sets</span>
             <span className="text-gray-300">|</span>
