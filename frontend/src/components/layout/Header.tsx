@@ -9,7 +9,7 @@ export default function Header(): JSX.Element {
     <header className="bg-white shadow-sm sticky top-0 z-40 pt-safe">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link to="/home" className="flex items-center gap-2">
-          <Dumbbell className="w-7 h-7 text-primary-500" />
+          <img src="/logo.png" alt="FitOrFail" className="w-7 h-7" />
           <span className="text-xl font-bold text-gray-900">FitOrFail</span>
         </Link>
 

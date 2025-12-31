@@ -1,5 +1,5 @@
 import { Link, Navigate } from 'react-router-dom';
-import { Dumbbell, Zap, RefreshCw, Star, BarChart3, ChevronRight, Target } from 'lucide-react';
+import { Zap, RefreshCw, Star, BarChart3, ChevronRight, Target } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LandingPage(): JSX.Element {
@@ -14,7 +14,7 @@ export default function LandingPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white flex items-center justify-center">
-        <Dumbbell className="w-12 h-12 text-primary-500 animate-pulse" />
+        <img src="/icon.png" alt="Loading" className="w-12 h-12 animate-pulse" />
       </div>
     );
   }
@@ -25,7 +25,7 @@ export default function LandingPage(): JSX.Element {
       <header className="px-4 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Dumbbell className="w-8 h-8 text-primary-500" />
+            <img src="/logo.png" alt="FitOrFail" className="w-8 h-8" />
             <span className="text-2xl font-bold text-gray-900">FitOrFail</span>
           </div>
           <Link

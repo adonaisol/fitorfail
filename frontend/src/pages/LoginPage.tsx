@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Dumbbell, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface LoginFormData {
@@ -63,7 +63,7 @@ export default function LoginPage(): JSX.Element {
         {/* Logo */}
         <div className="flex justify-center">
           <Link to="/" className="flex items-center gap-2">
-            <Dumbbell className="w-10 h-10 text-primary-500" />
+            <img src="/logo.png" alt="FitOrFail" className="w-10 h-10" />
             <span className="text-2xl font-bold text-gray-900">FitOrFail</span>
           </Link>
         </div>
