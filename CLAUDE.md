@@ -71,6 +71,7 @@ fitorfail/
 ├── frontend/
 │   ├── tsconfig.json          # Extends root, React-specific
 │   ├── vite.config.js         # Vite config with API proxy
+│   ├── public/                # Static assets (logo.png, icon.png)
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── common/        # ProtectedRoute, ConfirmDialog, Skeleton, ErrorBoundary, RatingInput
@@ -83,7 +84,9 @@ fitorfail/
 │   │   └── App.tsx
 │   └── package.json
 ├── dataset/                   # Exercise data (CSV and JSON)
-└── plans/                     # Implementation plan documentation
+└── plans/                     # Implementation plans
+    ├── masterplan.md          # Original implementation plan
+    └── deployment-plan.md     # Build & deployment pipeline (esbuild)
 ```
 
 ## API Endpoints
@@ -232,3 +235,14 @@ interface Exercise {
 /home/profile     -> ProfilePage (settings & preferences) [protected]
 /home/help        -> HelpPage (user guide) [protected]
 ```
+
+## Deployment
+
+A deployment plan using esbuild exists at `plans/deployment-plan.md`. Key points:
+
+- **Development**: Vite for frontend (HMR), tsx watch for backend
+- **Production Build**: esbuild at root level builds both services
+- **Output**: Unified `dist/` with `frontend/` static files and `backend/` server
+- **Target**: Cloud platforms (Render, Railway) with backend serving static frontend
+
+Implementation pending - see the plan for details.
