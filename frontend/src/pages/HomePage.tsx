@@ -115,7 +115,7 @@ export default function HomePage(): JSX.Element {
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
               Generate your personalized weekly workout plan based on your preferences and fitness level.
             </p>
-            <Link to="/generate" className="btn-primary inline-flex gap-2">
+            <Link to="/home/generate" className="btn-primary inline-flex gap-2">
               <Plus className="w-5 h-5" />
               Generate Workout Plan
             </Link>

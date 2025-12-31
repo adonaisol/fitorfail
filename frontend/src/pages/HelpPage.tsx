@@ -64,7 +64,7 @@ export default function HelpPage(): JSX.Element {
           <div className="bg-primary-50 rounded-lg p-3 mt-2">
             <p className="text-primary-700 font-medium text-sm">Quick Start:</p>
             <ol className="list-decimal list-inside mt-1 text-primary-600 space-y-1">
-              <li>Set your preferences in <Link to="/profile" className="underline">Profile</Link></li>
+              <li>Set your preferences in <Link to="/home/profile" className="underline">Profile</Link></li>
               <li>Generate a workout plan</li>
               <li>Complete exercises and track your progress</li>
             </ol>

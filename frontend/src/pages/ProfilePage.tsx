@@ -119,7 +119,7 @@ export default function ProfilePage(): JSX.Element {
           </div>
         </div>
         <Link
-          to="/help"
+          to="/home/help"
           className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-3">

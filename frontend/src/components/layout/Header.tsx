@@ -8,14 +8,14 @@ export default function Header(): JSX.Element {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40 pt-safe">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/home" className="flex items-center gap-2">
           <Dumbbell className="w-7 h-7 text-primary-500" />
           <span className="text-xl font-bold text-gray-900">FitOrFail</span>
         </Link>
 
         <div className="flex items-center gap-1">
           <Link
-            to="/"
+            to="/home"
             className="group relative hidden md:flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-500"
           >
             <Dumbbell className="w-5 h-5" />
@@ -24,7 +24,7 @@ export default function Header(): JSX.Element {
             </span>
           </Link>
           <Link
-            to="/history"
+            to="/home/history"
             className="group relative hidden md:flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-500"
           >
             <History className="w-5 h-5" />
@@ -33,7 +33,7 @@ export default function Header(): JSX.Element {
             </span>
           </Link>
           <Link
-            to="/help"
+            to="/home/help"
             className="group relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-500"
           >
             <HelpCircle className="w-5 h-5" />
@@ -42,7 +42,7 @@ export default function Header(): JSX.Element {
             </span>
           </Link>
           <Link
-            to="/profile"
+            to="/home/profile"
             className="group relative hidden md:flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-500"
           >
             <User className="w-5 h-5" />

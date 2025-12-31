@@ -8,10 +8,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { to: '/', icon: Home, label: 'Home' },
-  { to: '/generate', icon: Plus, label: 'Generate' },
-  { to: '/history', icon: History, label: 'History' },
-  { to: '/profile', icon: User, label: 'Profile' },
+  { to: '/home', icon: Home, label: 'Home' },
+  { to: '/home/generate', icon: Plus, label: 'Generate' },
+  { to: '/home/history', icon: History, label: 'History' },
+  { to: '/home/profile', icon: User, label: 'Profile' },
 ];
 
 export default function BottomNav(): JSX.Element {

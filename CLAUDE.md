@@ -210,6 +210,7 @@ interface Exercise {
 - `src/components/common/ErrorBoundary.tsx` - Global error boundary
 - `src/components/common/RatingInput.tsx` - Star rating component
 - `src/components/layout/Header.tsx` - Icon navigation with tooltips
+- `src/pages/LandingPage.tsx` - Public landing page for new users
 - `src/pages/GeneratePage.tsx` - Plan generation wizard
 - `src/pages/ProfilePage.tsx` - User profile and preferences
 - `src/pages/HistoryPage.tsx` - Workout history and stats
@@ -219,11 +220,12 @@ interface Exercise {
 ## Frontend Routes
 
 ```
-/                 -> HomePage (current week workout or empty state)
+/                 -> LandingPage (unauthenticated users, redirects to /home if logged in)
 /login            -> LoginPage
 /register         -> RegisterPage
-/generate         -> GeneratePage (create new plan)
-/history          -> HistoryPage (past workouts, stats)
-/profile          -> ProfilePage (settings & preferences)
-/help             -> HelpPage (user guide)
+/home             -> HomePage (current week workout or empty state) [protected]
+/home/generate    -> GeneratePage (create new plan) [protected]
+/home/history     -> HistoryPage (past workouts, stats) [protected]
+/home/profile     -> ProfilePage (settings & preferences) [protected]
+/home/help        -> HelpPage (user guide) [protected]
 ```

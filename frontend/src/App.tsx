@@ -5,6 +5,7 @@ import { WorkoutProvider } from './contexts/WorkoutContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -41,9 +42,10 @@ function App(): JSX.Element {
         }}
       />
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/" element={
+        <Route path="/home" element={
           <ProtectedRoute>
             <WorkoutProvider>
               <Layout />
