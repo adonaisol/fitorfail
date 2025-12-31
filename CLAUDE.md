@@ -73,10 +73,10 @@ fitorfail/
 │   ├── vite.config.js         # Vite config with API proxy
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── common/        # ProtectedRoute.tsx, ConfirmDialog.tsx, Skeleton.tsx
-│   │   │   ├── layout/        # Layout.tsx, Header.tsx, BottomNav.tsx
-│   │   │   └── workout/       # WeeklyPlanView.tsx, DayCard.tsx, ExerciseCard.tsx
-│   │   ├── pages/             # HomePage, LoginPage, RegisterPage, GeneratePage, ProfilePage
+│   │   │   ├── common/        # ProtectedRoute, ConfirmDialog, Skeleton, ErrorBoundary, RatingInput
+│   │   │   ├── layout/        # Layout, Header (icon nav with tooltips), BottomNav
+│   │   │   └── workout/       # WeeklyPlanView, DayCard, ExerciseCard (memoized)
+│   │   ├── pages/             # HomePage, LoginPage, RegisterPage, GeneratePage, ProfilePage, HistoryPage, HelpPage
 │   │   ├── contexts/          # AuthContext.tsx, WorkoutContext.tsx
 │   │   ├── services/          # api.ts (axios client with auth interceptor)
 │   │   ├── types/             # index.ts (TypeScript interfaces)
@@ -184,9 +184,9 @@ interface Exercise {
 - [x] **Phase 4: Weekly Workout View** - WeeklyPlanView, DayCard, ExerciseCard, GeneratePage
 - [x] **Phase 5: Workout Management** - Toast notifications, confirmation dialogs, loading skeletons, undo completion
 - [x] **Phase 6: User Preferences & Ratings** - Profile page, preferences form, exercise ratings
-- [ ] **Phase 7: Partial Refresh Feature** - Refresh only uncompleted exercises/days
-- [ ] **Phase 8: History & Analytics** - Past workouts, statistics
-- [ ] **Phase 9: Polish & Testing** - Error handling, mobile testing, accessibility
+- [x] **Phase 7: Partial Refresh Feature** - Refresh only uncompleted exercises/days
+- [x] **Phase 8: History & Analytics** - Past workouts, statistics, streaks
+- [x] **Phase 9: Polish & Testing** - ErrorBoundary, accessibility (ARIA, focus trap), performance (React.memo), Help page, Header redesign
 - [ ] **Phase 10: Time-based Constraints** - Prevent modifying past days, completing future days (Post-MVP)
 
 ## Key Files
@@ -203,9 +203,27 @@ interface Exercise {
 
 - `src/contexts/WorkoutContext.tsx` - Workout state management
 - `src/components/workout/WeeklyPlanView.tsx` - Main workout display
-- `src/components/common/ConfirmDialog.tsx` - Reusable confirmation modal
+- `src/components/workout/DayCard.tsx` - Day card with exercises (memoized)
+- `src/components/workout/ExerciseCard.tsx` - Exercise card (memoized)
+- `src/components/common/ConfirmDialog.tsx` - Accessible confirmation modal (focus trap, ARIA)
 - `src/components/common/Skeleton.tsx` - Loading skeleton components
+- `src/components/common/ErrorBoundary.tsx` - Global error boundary
 - `src/components/common/RatingInput.tsx` - Star rating component
+- `src/components/layout/Header.tsx` - Icon navigation with tooltips
 - `src/pages/GeneratePage.tsx` - Plan generation wizard
 - `src/pages/ProfilePage.tsx` - User profile and preferences
+- `src/pages/HistoryPage.tsx` - Workout history and stats
+- `src/pages/HelpPage.tsx` - User guide and instructions
 - `src/services/api.ts` - Axios client with auth interceptor
+
+## Frontend Routes
+
+```
+/                 -> HomePage (current week workout or empty state)
+/login            -> LoginPage
+/register         -> RegisterPage
+/generate         -> GeneratePage (create new plan)
+/history          -> HistoryPage (past workouts, stats)
+/profile          -> ProfilePage (settings & preferences)
+/help             -> HelpPage (user guide)
+```
