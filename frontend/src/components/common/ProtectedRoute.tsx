@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -8,7 +8,6 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps): JSX.Element {
   const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -19,8 +18,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps): JSX.E
   }
 
   if (!isAuthenticated) {
-    // Redirect to login, but save the attempted URL
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Redirect to landing page
+    return <Navigate to="/" replace />;
   }
 
   return children;

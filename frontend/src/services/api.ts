@@ -43,9 +43,9 @@ api.interceptors.response.use(
       // Clear token on unauthorized
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Optionally redirect to login
-      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-        window.location.href = '/login';
+      // Redirect to landing page
+      if (window.location.pathname !== '/' && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.href = '/';
       }
     }
     return Promise.reject(error);

@@ -1,4 +1,4 @@
-import { initializeDatabase, closeDatabase } from '../../src/config/database.js';
+import { initializeDatabase, closeDatabase } from '../../src/config/database';
 
 console.log('Initializing database...');
 

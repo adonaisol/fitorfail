@@ -30,11 +30,26 @@ interface ScoredExercise extends Exercise {
   score: number;
 }
 
+interface SessionExercise {
+  exerciseId: number;
+  sessionExerciseId: number;
+  orderIndex: number;
+  sets: number;
+  reps: string;
+  completed: boolean;
+  title: string;
+  description: string | null;
+  type: string | null;
+  bodyPart: string | null;
+  equipment: string | null;
+  level: string | null;
+}
+
 interface DayPlan {
   dayNumber: number;
   dayName: string;
   focusBodyParts: string[];
-  exercises: Exercise[];
+  exercises: (Exercise | SessionExercise)[];
 }
 
 interface GeneratedPlan {
@@ -449,7 +464,20 @@ export function getWorkoutPlan(planId: number, userId: number): GeneratedPlan | 
       completed: number;
     }>('SELECT * FROM session_exercises WHERE session_id = ? ORDER BY order_index', [session.id]);
 
-    const exercises: (Exercise & { sessionExerciseId: number; sets: number; reps: string; completed: boolean })[] = [];
+    const exercises: {
+      exerciseId: number;
+      sessionExerciseId: number;
+      orderIndex: number;
+      sets: number;
+      reps: string;
+      completed: boolean;
+      title: string;
+      description: string | null;
+      type: string | null;
+      bodyPart: string | null;
+      equipment: string | null;
+      level: string | null;
+    }[] = [];
 
     for (const se of sessionExercises) {
       const exercise = get<Exercise>(
@@ -459,11 +487,18 @@ export function getWorkoutPlan(planId: number, userId: number): GeneratedPlan | 
 
       if (exercise) {
         exercises.push({
-          ...exercise,
+          exerciseId: exercise.id,
           sessionExerciseId: se.id,
+          orderIndex: se.order_index,
           sets: se.sets,
           reps: se.reps,
-          completed: se.completed === 1
+          completed: se.completed === 1,
+          title: exercise.title,
+          description: exercise.description,
+          type: exercise.type,
+          bodyPart: exercise.body_part,
+          equipment: exercise.equipment,
+          level: exercise.level
         });
       }
     }
@@ -877,7 +912,20 @@ export function refreshIncompleteDays(planId: number, userId: number): { refresh
 export function replaceSingleExercise(
   sessionExerciseId: number,
   userId: number
-): { success: boolean; exercise?: Exercise & { sessionExerciseId: number; sets: number; reps: string; completed: boolean } } {
+): { success: boolean; exercise?: {
+  exerciseId: number;
+  sessionExerciseId: number;
+  orderIndex: number;
+  sets: number;
+  reps: string;
+  completed: boolean;
+  title: string;
+  description: string | null;
+  type: string | null;
+  bodyPart: string | null;
+  equipment: string | null;
+  level: string | null;
+} } {
   // Verify ownership and get current exercise info
   const sessionExercise = get<{
     id: number;
@@ -968,18 +1016,18 @@ export function replaceSingleExercise(
   return {
     success: true,
     exercise: {
-      id: replacement.id,
+      exerciseId: replacement.id,
+      sessionExerciseId: sessionExercise.id,
+      orderIndex: sessionExercise.order_index,
+      sets: sessionExercise.sets,
+      reps: sessionExercise.reps,
+      completed: false,
       title: replacement.title,
       description: replacement.description,
       type: replacement.type,
-      body_part: replacement.body_part,
+      bodyPart: replacement.body_part,
       equipment: replacement.equipment,
-      level: replacement.level,
-      rating: replacement.rating,
-      sessionExerciseId: sessionExercise.id,
-      sets: sessionExercise.sets,
-      reps: sessionExercise.reps,
-      completed: false
+      level: replacement.level
     }
   };
 }

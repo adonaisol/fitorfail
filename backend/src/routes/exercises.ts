@@ -134,7 +134,10 @@ router.post('/:id/rate', authenticate, (req: Request<{ id: string }>, res: Respo
   try {
     const userId = req.userId!;
     const exerciseId = parseInt(req.params.id);
-    const { rating, notes } = req.body;
+    const { rating: rawRating, notes } = req.body;
+
+    // Ensure rating is a number
+    const rating = typeof rawRating === 'string' ? parseFloat(rawRating) : rawRating;
 
     if (isNaN(exerciseId)) {
       res.status(400).json({ error: 'Invalid exercise ID' });
@@ -142,7 +145,7 @@ router.post('/:id/rate', authenticate, (req: Request<{ id: string }>, res: Respo
     }
 
     // Validate rating
-    if (rating === undefined || rating < 0 || rating > 5) {
+    if (rating === undefined || rating === null || isNaN(rating) || rating < 0 || rating > 5) {
       res.status(400).json({ error: 'Rating must be between 0 and 5' });
       return;
     }
@@ -187,7 +190,8 @@ router.post('/:id/rate', authenticate, (req: Request<{ id: string }>, res: Respo
     });
   } catch (error) {
     console.error('Error saving rating:', error);
-    res.status(500).json({ error: 'Failed to save rating' });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to save rating: ${errorMessage}` });
   }
 });
 
