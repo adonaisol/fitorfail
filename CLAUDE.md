@@ -105,9 +105,11 @@ fitorfail/
 - `PUT /api/workouts/:id/activate` - Activate a draft plan
 - `POST /api/workouts/:id/refresh` - Regenerate entire week
 - `POST /api/workouts/:planId/days/:dayNumber/refresh` - Regenerate single day
+- `POST /api/workouts/:planId/days/:dayNumber/refresh-uncompleted` - Refresh only uncompleted exercises
 - `GET /api/workouts/sessions/:id` - Get session with exercises
 - `PUT /api/workouts/exercises/:sessionExerciseId/complete` - Mark exercise complete
 - `PUT /api/workouts/exercises/:sessionExerciseId/uncomplete` - Undo exercise completion
+- `POST /api/workouts/exercises/:sessionExerciseId/replace` - Replace single exercise
 - `GET /api/workouts/history` - Get past workout plans
 
 ### User Preferences (all require authentication)
@@ -187,6 +189,7 @@ interface Exercise {
 - [x] **Phase 7: Partial Refresh Feature** - Refresh only uncompleted exercises/days
 - [x] **Phase 8: History & Analytics** - Past workouts, statistics, streaks
 - [x] **Phase 9: Polish & Testing** - ErrorBoundary, accessibility (ARIA, focus trap), performance (React.memo), Help page, Header redesign
+- [x] **Phase 9.5: Landing Page & Exercise Replacement** - Public landing page, replace single exercise feature
 - [ ] **Phase 10: Time-based Constraints** - Prevent modifying past days, completing future days (Post-MVP)
 
 ## Key Files

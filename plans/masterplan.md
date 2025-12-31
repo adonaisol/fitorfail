@@ -86,8 +86,11 @@ Full-stack fitness application that automatically generates personalized weekly 
 - `PUT /api/workouts/:id/activate` - Activate draft plan
 - `POST /api/workouts/:id/refresh` - Refresh all days
 - `POST /api/workouts/:planId/days/:dayNumber/refresh` - Refresh single day
+- `POST /api/workouts/:planId/days/:dayNumber/refresh-uncompleted` - Refresh uncompleted exercises
 - `GET /api/workouts/sessions/:id` - Get session details
 - `PUT /api/workouts/exercises/:sessionExerciseId/complete` - Mark complete
+- `PUT /api/workouts/exercises/:sessionExerciseId/uncomplete` - Undo completion
+- `POST /api/workouts/exercises/:sessionExerciseId/replace` - Replace single exercise
 - `GET /api/workouts/history` - Get past plans
 
 ---
@@ -280,6 +283,55 @@ Full-stack fitness application that automatically generates personalized weekly 
 
 ---
 
+### Phase 9.5: Landing Page & Exercise Replacement ✅ COMPLETED
+
+**Completed:**
+
+**Landing Page (`LandingPage.tsx`)**
+- [x] Public landing page for unauthenticated users
+- [x] Hero section explaining the app's purpose
+- [x] Feature cards (Skill-Based, Smart Generation, Flexible Refresh, Personal Ratings, Track Progress)
+- [x] Workout split cards (3/4/5 day) with horizontal scroll on mobile
+- [x] Difficulty color progression (green → amber → red)
+- [x] Call-to-action section with registration link
+- [x] Auto-redirect to `/home` for authenticated users
+- [x] Mobile-responsive design with side-by-side buttons and cards
+
+**Replace Single Exercise**
+- [x] Backend: `replaceSingleExercise()` function in `workoutGeneratorService.ts`
+- [x] API: `POST /api/workouts/exercises/:id/replace` endpoint
+- [x] Frontend: Replace button (↔ icon) next to each uncompleted exercise
+- [x] Smart replacement: same body part, not already in plan, uses scoring algorithm
+- [x] Button hidden when exercise is completed
+- [x] Tooltip on hover showing "Replace"
+
+**Routing Changes:**
+- [x] `/` now shows LandingPage for unauthenticated users
+- [x] Protected routes moved under `/home` prefix
+- [x] Updated all navigation links accordingly
+
+**Documentation:**
+- [x] Updated Help page with replace exercise instructions
+- [x] Updated README with new feature and API endpoint
+
+**Files created:**
+- `frontend/src/pages/LandingPage.tsx`
+
+**Files updated:**
+- `backend/src/services/workoutGeneratorService.ts` - Added `replaceSingleExercise` function
+- `backend/src/routes/workouts.ts` - Added replace endpoint
+- `frontend/src/services/api.ts` - Added `replaceExercise` method
+- `frontend/src/contexts/WorkoutContext.tsx` - Added `replaceExercise` function
+- `frontend/src/components/workout/ExerciseCard.tsx` - Added replace button with ArrowLeftRight icon
+- `frontend/src/components/workout/DayCard.tsx` - Pass onReplaceExercise prop
+- `frontend/src/components/workout/WeeklyPlanView.tsx` - Pass onReplaceExercise prop
+- `frontend/src/pages/HomePage.tsx` - Pass replaceExercise to WeeklyPlanView
+- `frontend/src/pages/HelpPage.tsx` - Added replace exercise documentation
+- `frontend/src/App.tsx` - Updated routing structure
+- `README.md` - Added feature and API endpoint
+
+---
+
 ### Phase 10: Time-based Constraints 🔲 NOT STARTED (Post-MVP)
 
 **Planned:**
@@ -349,12 +401,14 @@ Score =
 ## Frontend Routing (Implemented)
 
 ```
-/                 -> HomePage (current week workout or empty state)
+/                 -> LandingPage (public, redirects to /home if logged in)
 /login            -> LoginPage
 /register         -> RegisterPage
-/generate         -> GeneratePage (create new plan)
-/history          -> HistoryPage (not implemented)
-/profile          -> ProfilePage (not implemented)
+/home             -> HomePage (current week workout or empty state) [protected]
+/home/generate    -> GeneratePage (create new plan) [protected]
+/home/history     -> HistoryPage (past workouts, stats) [protected]
+/home/profile     -> ProfilePage (settings & preferences) [protected]
+/home/help        -> HelpPage (user guide) [protected]
 ```
 
 ---
