@@ -5,17 +5,17 @@
     "type": "module",
     "description": "FitOrFail - Personalized workout plan generator",
     "scripts": {
+        "postinstall": "cd backend && npm install && cd ../frontend && npm install",
         "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
         "dev:frontend": "cd frontend && npm run dev",
         "dev:backend": "cd backend && npm run dev",
         "build": "node scripts/build.js && npm run postbuild",
-        "postbuild": "cd dist && npm install --production",
+        "postbuild": "cd dist && npm install --omit=dev",
         "build:frontend": "node scripts/build-frontend.js",
         "build:backend": "node scripts/build-backend.js",
         "start": "cd dist && npm start",
         "start:local": "cd dist && NODE_ENV=production npm start",
-        "clean": "rm -rf dist",
-        "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+        "clean": "rm -rf dist"
     },
     "devDependencies": {
         "esbuild": "^0.20.0",
