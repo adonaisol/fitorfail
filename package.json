@@ -1,0 +1,27 @@
+{
+    "name": "fitorfail",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "FitOrFail - Personalized workout plan generator",
+    "scripts": {
+        "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+        "dev:frontend": "cd frontend && npm run dev",
+        "dev:backend": "cd backend && npm run dev",
+        "build": "node scripts/build.js && npm run postbuild",
+        "postbuild": "cd dist && npm install --production",
+        "build:frontend": "node scripts/build-frontend.js",
+        "build:backend": "node scripts/build-backend.js",
+        "start": "cd dist && npm start",
+        "start:local": "cd dist && NODE_ENV=production npm start",
+        "clean": "rm -rf dist",
+        "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+    },
+    "devDependencies": {
+        "esbuild": "^0.20.0",
+        "concurrently": "^8.2.2"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}

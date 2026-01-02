@@ -6,7 +6,16 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = path.join(__dirname, '../../database/fitorfail.db');
+// Determine the correct database path based on environment
+// In development: __dirname is backend/src/config, db is at backend/database/
+// In production (bundled): __dirname is dist/backend, db is at dist/backend/database/
+const isProduction = __dirname.includes('dist');
+const dbPath = isProduction
+  ? path.join(__dirname, 'database', 'fitorfail.db')
+  : path.join(__dirname, '../../database/fitorfail.db');
+const migrationsBasePath = isProduction
+  ? path.join(__dirname, 'database', 'migrations')
+  : path.join(__dirname, '../../database/migrations');
 
 let db: SqlJsDatabase | null = null;
 let SQL: SqlJsStatic | null = null;
@@ -32,14 +41,13 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
   }
 
   // Run migrations
-  const migrationsPath = path.join(__dirname, '../../database/migrations');
-  if (fs.existsSync(migrationsPath)) {
-    const migrationFiles = fs.readdirSync(migrationsPath)
+  if (fs.existsSync(migrationsBasePath)) {
+    const migrationFiles = fs.readdirSync(migrationsBasePath)
       .filter(f => f.endsWith('.sql'))
       .sort();
 
     for (const file of migrationFiles) {
-      const sql = fs.readFileSync(path.join(migrationsPath, file), 'utf-8');
+      const sql = fs.readFileSync(path.join(migrationsBasePath, file), 'utf-8');
       db.run(sql);
       console.log(`Applied migration: ${file}`);
     }

@@ -155,4 +155,4 @@ vite.config.ts.timestamp-*
 Thumbs.db
 
 # Misc
-dataset/
+dataset/*.csv
