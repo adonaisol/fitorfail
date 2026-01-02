@@ -6,9 +6,9 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Determine the correct database path based on environment
-// In development: __dirname is backend/src/config, db is at backend/database/
-// In production (bundled): __dirname is dist/backend, db is at dist/backend/database/
+// Determine the correct paths based on environment
+// In development: __dirname is backend/src/config
+// In production (bundled): __dirname is dist/backend
 const isProduction = __dirname.includes('dist');
 const dbPath = isProduction
   ? path.join(__dirname, 'database', 'fitorfail.db')
@@ -16,6 +16,9 @@ const dbPath = isProduction
 const migrationsBasePath = isProduction
   ? path.join(__dirname, 'database', 'migrations')
   : path.join(__dirname, '../../database/migrations');
+const datasetPath = isProduction
+  ? path.join(__dirname, '..', 'dataset', 'allExercises.json')
+  : path.join(__dirname, '../../../dataset/allExercises.json');
 
 let db: SqlJsDatabase | null = null;
 let SQL: SqlJsStatic | null = null;
@@ -27,9 +30,83 @@ export async function getDatabase(): Promise<SqlJsDatabase> {
   return db!;
 }
 
+interface ExerciseData {
+  id: number;
+  title: string;
+  description: string | null;
+  type: string | null;
+  bodyPart: string | null;
+  equipment: string | null;
+  level: string | null;
+  rating: number | null;
+  ratingDesc: string | null;
+}
+
+async function seedExercisesIfEmpty(): Promise<void> {
+  if (!db) return;
+
+  // Check if exercises table has any data
+  const result = db.exec('SELECT COUNT(*) as count FROM exercises');
+  const count = result[0]?.values[0]?.[0] as number || 0;
+
+  if (count > 0) {
+    console.log(`Exercises already seeded (${count} exercises found)`);
+    return;
+  }
+
+  console.log('Exercises table is empty, seeding from dataset...');
+
+  // Load exercises from JSON
+  if (!fs.existsSync(datasetPath)) {
+    console.error(`Dataset not found at ${datasetPath}`);
+    return;
+  }
+
+  const exercisesJson = fs.readFileSync(datasetPath, 'utf-8');
+  const exercises: ExerciseData[] = JSON.parse(exercisesJson);
+
+  console.log(`Found ${exercises.length} exercises to import`);
+
+  let inserted = 0;
+  for (const exercise of exercises) {
+    try {
+      db.run(
+        `INSERT OR REPLACE INTO exercises (id, title, description, type, body_part, equipment, level, rating, rating_desc)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          exercise.id,
+          exercise.title,
+          exercise.description,
+          exercise.type,
+          exercise.bodyPart,
+          exercise.equipment,
+          exercise.level,
+          exercise.rating,
+          exercise.ratingDesc
+        ]
+      );
+      inserted++;
+      if (inserted % 500 === 0) {
+        console.log(`Inserted ${inserted} exercises...`);
+      }
+    } catch (err) {
+      console.error(`Failed to insert exercise ${exercise.id}:`, (err as Error).message);
+    }
+  }
+
+  console.log(`Successfully seeded ${inserted} exercises!`);
+  saveDatabase();
+}
+
 export async function initializeDatabase(): Promise<SqlJsDatabase> {
   if (!SQL) {
     SQL = await initSqlJs();
+  }
+
+  // Ensure database directory exists
+  const dbDir = path.dirname(dbPath);
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
   }
 
   // Load existing database or create new one
@@ -52,6 +129,9 @@ export async function initializeDatabase(): Promise<SqlJsDatabase> {
       console.log(`Applied migration: ${file}`);
     }
   }
+
+  // Auto-seed exercises if table is empty
+  await seedExercisesIfEmpty();
 
   // Save the database to disk
   saveDatabase();
